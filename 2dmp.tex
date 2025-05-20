@@ -1,0 +1,456 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{geometry}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[dvipsnames]{xcolor}
+\geometry{margin=1in}
+\setlength{\headheight}{14pt}
+\addtolength{\topmargin}{-2pt}
+\pagestyle{fancy}
+\fancyhead[L]{2D Motion Profiling}
+\fancyhead[R]{Differential Drive}
+
+\definecolor{codegray}{gray}{0.95}
+\lstset{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    language=C++,
+    showstringspaces=false,
+    keywordstyle=\color{blue},
+    commentstyle=\color{LimeGreen},
+    stringstyle=\color{red}
+}
+
+\title{A Step-by-Step Guide to 2D Motion Profiling Using Bézier Curves}
+\author{Mechanics Division, Autonomous Systems Research}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper walks through the construction and explanation of a real-time motion profiling system for differential drive robots. It introduces foundational concepts in calculus, curve modeling, numerical integration, and motion planning. All concepts are broken down for high-school level understanding, with annotated code and diagrams to guide the reader through the complete system.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{What is Motion Profiling?}
+
+Motion profiling answers the question: how should a robot move from point A to point B smoothly and safely?
+
+\begin{itemize}
+  \item How fast should it go?
+  \item When should it turn?
+  \item When should it start slowing down?
+\end{itemize}
+
+The result is a path plus a time-parameterized velocity and angular velocity profile that respects the robot’s physical limits.
+
+\section{Our Goal: Move Along a Curve}
+
+We want to follow a curved path while:
+\begin{itemize}
+  \item Respecting maximum speed and acceleration
+  \item Slowing down for turns (based on curvature)
+  \item Hitting specified speeds at key positions (keyframes)
+\end{itemize}
+
+To do that, we describe the path mathematically and then compute how the robot should move along it in real time.
+
+\section{Curve Representation Options}
+
+There are multiple ways to describe a smooth curve:
+
+\begin{itemize}
+  \item \textbf{Quadratic Bézier Curve:} Uses 3 control points (a start point, end point, and one middle control point) to form a smooth curve. It is simple but less flexible in shaping the path.
+  \item \textbf{Cubic Bézier Curve:} Uses 4 control points (start, end, and two control points). This gives more control over the curve's shape. We use cubic Béziers here for a good balance of simplicity and flexibility.
+  \item \textbf{Cubic Hermite Splines:} Defined by endpoints and specified tangents (slopes) at those endpoints. This means you explicitly set the direction of travel at each end, resulting in a smooth curve that honors those directions.
+  \item \textbf{Catmull--Rom Splines:} A type of spline that passes through a series of given waypoints. The curve is calculated to smoothly interpolate through all the points, making it easy to create paths through specific locations.
+\end{itemize}
+
+We chose cubic Bezier for its balance of simplicity and control.
+
+\section{What are Keyframes?}
+
+Keyframes are specific points along the path where we fix the robot’s speed. For example:
+
+\begin{itemize}
+  \item Start at 0~m/s
+  \item Reach 1~m/s halfway
+  \item End at 0~m/s
+\end{itemize}
+
+The planner converts those into arc‐length positions and then blends between them. In practice, path planning software (such as \textit{PATH.JERRYIO}) provides a visual interface to define keyframes. For example, PATH.JERRYIO includes a "speed graph" where you can add \textbf{speed keyframes} at various positions along the path:contentReference[oaicite:1]{index=1}. Each keyframe corresponds to a specific distance along the path (the x-axis on the graph) and a desired speed (the y-axis). The planner then constructs the speed profile by connecting these points smoothly, ensuring the robot slows down or speeds up at the designated locations.
+
+\section{Quick Primer: Derivatives and Integrals}
+
+\subsection*{Derivative = Rate of Change}
+
+If \(s(t)\) is position over time, then
+\[
+v(t) = \frac{ds}{dt},
+\]
+the instantaneous speed.
+
+\subsection*{Integral = Area Under Curve}
+
+If \(v(t)\) is speed, then
+\[
+s(t) = \int_{0}^{t} v(\tau)\,d\tau,
+\]
+the total distance traveled.
+
+\section{Arc Length via Gaussian Quadrature}
+
+For a parametric curve \(\mathbf r(t) = (x(t), y(t))\), the arc length from the start up to parameter \(t\) is 
+\[
+s(t) = \int_{0}^{t} \|\mathbf r'(\tau)\|\,d\tau,
+\] 
+the integral of speed \(\|\mathbf r'(\tau)\|\) along the curve. We approximate this integral with Gaussian quadrature:
+\[
+\int_a^b f(x)\,dx \approx \frac{b-a}{2}\sum_{i=1}^n w_i\,f\!\Bigl(\tfrac{b-a}{2}x_i + \tfrac{a+b}{2}\Bigr).
+\]
+
+\paragraph{Numerical integration rationale.}%
+For most curves, there isn't a simple formula for \(s(t)\), so we need to integrate numerically. Gaussian quadrature is one effective method for numerical integration. It chooses special sample points (nodes \(x_i\)) and weights \(w_i\) to maximize accuracy. An \(n\)-point Gauss–Legendre rule is exact for all polynomials up to degree \(2n-1\), meaning it integrates any such polynomial perfectly on \([-1,1]\) with only \(n\) evaluations of \(f\).
+
+To illustrate, the 2-point Gaussian rule on \([-1,1]\) picks
+\[
+x_1=-\frac{1}{\sqrt{3}},\quad x_2=\frac{1}{\sqrt{3}},
+\qquad
+w_1=w_2=1,
+\]
+so that
+\[
+\int_{-1}^{1} f(x)\,dx \approx f\!\Bigl(-\tfrac{1}{\sqrt{3}}\Bigr)
+             +f\!\Bigl(\tfrac{1}{\sqrt{3}}\Bigr),
+\]
+which integrates any cubic polynomial exactly.
+
+\bigskip
+\noindent\textbf{Table of Nodes and Weights.}%
+\quad The following table lists the Gauss–Legendre nodes \(x_i\) and weights \(w_i\) on the standard interval \([-1,1]\) for \(n=2,3,4\). These are the constants you plug into the formula above.
+
+\begin{center}
+\begin{tabular}{cll}
+\toprule
+\multicolumn{1}{c}{\(\boldsymbol{n}\)} & \multicolumn{1}{c}{\(\boldsymbol{x_i}\) (nodes)} 
+                                       & \multicolumn{1}{c}{\(\boldsymbol{w_i}\) (weights)} \\
+\midrule
+\multirow{2}{*}{2} & \(-\tfrac{1}{\sqrt{3}}\approx -0.577350\) & \(1\) \\
+                   & \(\,+\tfrac{1}{\sqrt{3}}\approx  0.577350\) & \(1\) \\
+\midrule
+\multirow{3}{*}{3} & \(-\sqrt{\tfrac{3}{5}}\approx -0.774597\)  & \(\tfrac{5}{9}\approx0.555556\) \\
+                   & \(0\)                                       & \(\tfrac{8}{9}\approx0.888889\) \\
+                   & \(+\sqrt{\tfrac{3}{5}}\approx  0.774597\)  & \(\tfrac{5}{9}\approx0.555556\) \\
+\midrule
+\multirow{4}{*}{4} & \(-0.861136\) & \(0.347855\) \\
+                   & \(-0.339981\) & \(0.652145\) \\
+                   & \(+0.339981\) & \(0.652145\) \\
+                   & \(+0.861136\) & \(0.347855\) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Application to Arc Length.}%
+In our arc-length integral, set 
+\[
+f(\tau)=\|\mathbf r'(\tau)\|,
+\quad
+a=0,\quad b=t,
+\]
+and use the above \(x_i,w_i\) with
+\[
+\tau_i = \frac{b-a}{2}\,x_i + \frac{a+b}{2}
+         = \frac{t}{2}\,x_i + \frac{t}{2},
+\]
+to compute
+\[
+s(t) \approx \frac{t}{2}\sum_{i=1}^n w_i\,\|\mathbf r'(\tau_i)\|.
+\]
+With just \(n=4\) or \(5\), this gives a highly accurate approximation of \(s(t)\) without needing extremely fine subdivisions.
+
+
+\section{Finding the Next Parameter: Newton–Raphson}
+
+To move a small distance \(\Delta s\) along the path, we need to find the new parameter \(t_{\text{next}}\) such that 
+\[
+s(t_{\text{next}}) = s_{\text{current}} + \Delta s.
+\]
+We use Newton–Raphson (a root-finding method) to solve this equation:
+\[
+t_{k+1} = t_k - \frac{s(t_k) - \bigl(s_{\text{current}}+\Delta s\bigr)}{v(t_k)}.
+\]
+
+\paragraph{Why Newton's method?} We want to solve 
+\[
+F(t) = s(t) - \bigl(s_{\text{current}}+\Delta s\bigr) = 0
+\]
+for \(t\). Newton–Raphson is an efficient iterative technique that uses the derivative \(F'(t)=s'(t)=v(t)\).  Starting from an initial guess \(t_k\), we linearize and obtain
+\[
+t_{k+1} \;=\; t_k - \frac{F(t_k)}{F'(t_k)}
+\;=\; t_k - \frac{s(t_k) - \bigl(s_{\text{current}}+\Delta s\bigr)}{v(t_k)}.
+\]
+
+\paragraph{Stopping criterion.} We iterate \(k=0,1,2,\dots\) until one of the following is met:
+\[
+\bigl|\,t_{k+1}-t_k\bigr| < \varepsilon
+\quad\text{or}\quad
+\bigl|s(t_k) - \bigl(s_{\text{current}}+\Delta s\bigr)\bigr| < \varepsilon
+\quad\text{or}\quad
+k \ge k_{\max},
+\]
+where \(\varepsilon>0\) is a chosen tolerance (e.g.\ \(10^{-6}\)) and \(k_{\max}\) (e.g.\ \(10\)) caps the number of iterations to avoid infinite loops. This ensures we stop once the update or the residual is sufficiently small, or when we’ve reached a safe iteration limit.
+\section{Acceleration and Deceleration Distances}
+
+From basic kinematics:
+\[
+v^2 = v_0^2 + 2a\,\Delta s
+\quad\Longrightarrow\quad
+\Delta s = \frac{v^2 - v_0^2}{2a}\,,
+\] 
+which tells us the distance needed to change speed under constant acceleration $a$. 
+
+\begin{itemize}
+  \item If \(a > 0\): \(\Delta s\) is the distance needed to \textbf{accelerate} from \(v_0\) up to \(v\).
+  \item If \(a < 0\): \(\Delta s\) is the distance needed to \textbf{decelerate} (brake) from \(v_0\) down to \(v\).
+\end{itemize}
+
+\paragraph{Why it works.} This formula is derived by integrating acceleration over distance:
+\[
+a = \frac{dv}{dt}
+\quad\Rightarrow\quad
+v\,dv = a\,ds
+\quad\Rightarrow\quad
+\int_{v_0}^{v} v\,dv = \int_{0}^{\Delta s} a\,ds
+\quad\Rightarrow\quad
+\frac{v^2 - v_0^2}{2} = a\,\Delta s\,,
+\] 
+so rearranging gives $\Delta s = (v^2 - v_0^2)/(2a)$.
+
+\paragraph{Example.} Accelerating from \(0\) to \(2\,\mathrm{m/s}\) with \(a = 1\,\mathrm{m/s^2}\):
+\[
+\Delta s = \frac{2^2 - 0^2}{2 \cdot 1} = \frac{4}{2} = 2\,\mathrm{m}\,.
+\]
+
+\paragraph{Choosing $a$ values.} In practice, the maximum acceleration $a_{\max}$ and braking deceleration (often taken equal in magnitude for simplicity) are determined by the robot's motors and traction. You can estimate these values from motor specifications or experiments. For example, if a robot can accelerate from 0 to $2~\mathrm{m/s}$ in about $2$ seconds, then a rough estimate for $a_{\max}$ is $1~\mathrm{m/s^2}$. In reality, $a_{\max}$ might decrease as the robot speeds up (due to motor torque limits and drag), and $a_{\text{max decel}}$ might be limited by wheel grip (to prevent skidding).
+
+\section{Curvature and Turning Speed}
+
+For a 2D path \(\mathbf{r}(t) = (x(t), y(t))\), curvature is defined as:
+\[
+\kappa(t)
+= \frac{|x'(t)y''(t) - y'(t)x''(t)|}
+       {\big(x'(t)^2 + y'(t)^2\big)^{3/2}}\,,
+\qquad
+R(t) = \frac{1}{\kappa(t)}\,,
+\] 
+where \(R(t)\) is the radius of curvature at that point on the path.
+
+To ensure safe turning (limiting lateral acceleration), we restrict speed using:
+\[
+v_{\text{curve}}(t)
+= v_{\max} \cdot \frac{R(t)}{\,R(t) + \tfrac{w}{2}\,}\,,
+\] 
+where \(w\) is the track width (distance between the left and right wheels). 
+
+\paragraph{Why it works.} The centripetal acceleration is \(a_c = \frac{v^2}{R}\). As turns get tighter (smaller \(R\)), lateral forces increase. The formula above reduces speed as needed to avoid skidding or instability:
+\begin{itemize}
+  \item When \(R \gg w/2\): \(v_{\text{curve}} \approx v_{\max}\) (on gentle curves, you can go full speed).
+  \item When \(R \to 0\): \(v_{\text{curve}} \to 0\) (for very sharp turns, you must crawl).
+\end{itemize}
+
+\section{Keyframe Velocity Interpolation}
+
+Suppose we have keyframe pairs \((s_i, v_i)\), which define desired velocities \(v_i\) at specific arc lengths (distances) \(s_i\) along the path. To determine the target velocity at any intermediate position \(s\) (where $s_i \le s \le s_{i+1}$), we linearly interpolate between the surrounding keyframes:
+\[
+\lambda = \frac{s - s_i}{\,s_{i+1} - s_i\,}, 
+\qquad
+v_{\text{interp}}(s) = v_i + \lambda\big(v_{i+1} - v_i\big)\,.
+\]
+
+\paragraph{Why it works.} This simple linear interpolation ensures:
+\begin{itemize}
+  \item Smooth, gradual changes between keyframe speeds (no sudden jumps).
+  \item A predictable and easily adjustable speed profile.
+  \item Flexibility in motion design (e.g., you can insert slow-down or speed-up points as needed).
+\end{itemize}
+
+\section{Velocity Planning Algorithm}
+
+At each control cycle (each small time step), the system computes a safe and desired linear velocity $v_{\text{desired}}$ as follows:
+\begin{enumerate}
+  \item Compute \(v_{\max}\): the robot’s absolute maximum speed (a constant limit).
+  \item Compute \(v_{\rm accel}\): the speed limit imposed by acceleration/braking distance (how fast we can go without overshooting the remaining distance). This comes from the kinematic distance formula above.
+  \item Compute \(v_{\rm curve}\): the speed limit due to curvature at the robot’s current position (using the turning formula).
+  \item Compute \(v_{\rm interp}\): the speed dictated by keyframe interpolation at the current position.
+\end{enumerate}
+Then take the minimum of all these constraints:
+\[
+v_{\rm desired} = \min\{\,v_{\max},\;v_{\rm accel},\;v_{\rm curve},\;v_{\rm interp}\,\}\,,
+\] 
+which will be the commanded speed for this step.
+
+\section{Handling Multiple Path Segments}
+
+Many paths consist of several curve segments (splines) joined end-to-end. We can apply the motion profiling approach to each segment in sequence, while ensuring smooth transitions between segments.
+
+At the end of one segment, the next segment begins with the robot continuing at whatever speed it reached. In practice, the end of one spline and the start of the next share a common point and velocity (if planned correctly). To handle the transition smoothly:
+\begin{itemize}
+  \item If the remaining distance in the current segment is greater than the distance $\Delta s$ the robot will travel in the next time step, then the robot simply continues within the same segment (it hasn't reached the end yet).
+  \item If $\Delta s$ would carry the robot past the end of the current segment, we first move it to the end of that segment (using the portion of $\Delta s$ needed to cover the last bit of that spline). Then, we use the leftover distance to continue into the next segment (starting the next segment's arc length from 0 at its beginning).
+\end{itemize}
+
+This way, the robot seamlessly continues from one spline to the next. The parameter $t$ resets to 0 at the start of the new segment, and we proceed with the same calculations on the new segment. (If using keyframes, you can also set a keyframe at the segment boundary to enforce a specific speed at that point.)
+
+\section{Simplified C++ Example}
+
+\begin{lstlisting}
+// Compute (v, omega) along a Bezier curve
+std::pair<float,float> computeProfile(
+    const std::vector<Point>& pts, // 4 control points defining the Bezier curve
+    float maxVel,                  // maximum allowed velocity (m/s)
+    float maxAcc,                  // maximum allowed acceleration (m/s^2)
+    float decelDist,               // distance from end at which to begin braking (m)
+    float initVel,                 // initial velocity at the start of the profile (m/s)
+    float exitVel,                 // desired velocity at the end of the profile (m/s)
+    const std::vector<Keyframe>& kfPts, // sequence of (s, v) keyframe pairs
+    float dt                       // time step for each profile update (s)
+) {
+    // Static variables preserve values between calls
+    // t_prev: previous parameter t along the curve [0,1]
+    // v_prev: previous output velocity (initialized to initVel)
+    static float t_prev = 0;
+    static float v_prev = initVel;
+
+    // 1) Compute the arc-length s at the current parameter t_prev
+    //    arcLength(...) integrates the curve length from t=0 to t_prev
+    float s_curr = arcLength(pts, t_prev);
+
+    // 2) Determine velocity limit due to acceleration/deceleration
+    //    remaining: distance left from s_curr to end of curve (total_length - s_curr)
+    float remaining = arcLength(pts, 1.0f) - s_curr;
+    //    regionDist: distance we can accelerate (if before decelDist) or must decelerate (if within decelDist of end)
+    float regionDist = (s_curr < decelDist ? s_curr : remaining);
+    //    v_accel: maximum speed reachable under accel limits over regionDist
+    float v_accel  = std::sqrt(v_prev*v_prev + 2*maxAcc*regionDist);
+
+    // 3) Determine velocity limit from keyframe constraints
+    //    find the segment [s0, s1] in kfPts that contains current s_curr
+    int idx = findKeyframeIndex(kfPts, s_curr);
+    float s0 = kfPts[idx].s, s1 = kfPts[idx+1].s;
+    float v0 = kfPts[idx].v, v1 = kfPts[idx+1].v;
+    //    interpolate between v0 and v1 based on where s_curr lies
+    float alpha = (s_curr - s0) / (s1 - s0);
+    float v_kf = v0 + alpha * (v1 - v0);
+
+    // 4) Determine velocity limit from curvature (turning) constraints
+    //    kappa: curvature at current t_prev (1/R)
+    float kappa = curvature(pts, t_prev);
+    float R      = 1.0f / kappa;   // radius of curvature
+    float w      = 0.29f;         // track width (example value)
+    //    v_curve: max speed so lateral acceleration stays within limits
+    float v_curve = maxVel * R / (R + w/2);
+
+    // 5) Combine all velocity limits and clamp to maxVel
+    //    v_des is the desired velocity we can safely achieve
+    float v_des = std::min({ maxVel, v_accel, v_kf, v_curve });
+
+    // 6) Advance along the curve by ds = v_des * dt
+    float ds     = v_des * dt;
+    //    findTForS: solves for new t_next such that arcLength(pts, t_next) - s_curr = ds
+    float t_next = findTForS(pts, t_prev, ds);
+
+    // 7) Compute angular velocity omega
+    //    curvature at the new point times linear velocity gives turning rate
+    float omega = curvature(pts, t_next) * v_des;
+
+    // 8) Update stored state for next iteration
+    t_prev = t_next;
+    v_prev = v_des;
+
+    // Return the computed linear and angular velocities
+    return { v_des, omega };
+}
+\end{lstlisting}
+
+\paragraph{How to use these outputs.} Send \(v_{\rm desired}\) and \(\omega\) to your drivetrain’s velocity controller (commonly a PID or feedforward velocity controller, which is beyond the scope of this guide). A typical differential-drive conversion is:
+\[
+v_{\rm left}  = v_{\rm desired} - \frac{\omega\,w}{2},\qquad
+v_{\rm right} = v_{\rm desired} + \frac{\omega\,w}{2}\,,
+\] 
+where $w$ is the track width. For even better tracking, you can wrap this in a RAMSETE or pure-pursuit controller that uses the robot’s pose feedback to correct errors and ensure convergence to the planned path.
+
+\section{Why Acceleration/Deceleration Distance is an Approximation}
+
+The constant-$a$ distance formulas we derived assume the robot accelerates and then decelerates in a perfect “trapezoidal” velocity profile (speeding up, cruising at $v_{\max}$, then slowing down). This assumes the robot has a long enough straight run to reach and maintain that top speed.
+
+However, along a curvy path, we impose extra speed limits based on curvature. This often prevents the robot from ever reaching the planned $v_{\max}$ on that segment of the path. In other words, the velocity profile gets “cut off” or dips in the middle due to a turn. The robot might have to start slowing down for the turn before it ever fully accelerates to $v_{\max}$. The figure below illustrates this: in the curved case, the robot cannot maintain a flat-top speed profile because it must slow down for the turn.
+
+% (If an illustrative graph is available, it could be inserted here, showing an ideal trapezoidal profile vs. an actual curved-path profile.)
+
+Because of this effect, the simple distance formulas for accelerating and braking become approximations. In practice, the robot might start decelerating earlier (or not accelerate as much) when a turn is coming up, meaning our calculated distances might slightly overestimate how far it needs to speed up or slow down.
+
+To improve accuracy, we can account for curvature in our motion profile calculations. For example:
+\begin{itemize}
+  \item Instead of relying solely on the constant-$a$ formula, we could integrate the actual velocity curve (which already factors in curvature limits) to find the distance covered during acceleration and deceleration.
+  \item We can dynamically adjust target speeds. If a sharp turn is imminent, the algorithm can cap the speed below $v_{\max}$ ahead of time, so that the robot never accelerates beyond what it can comfortably slow down from when it reaches the curve.
+\end{itemize}
+
+\section{Ideas for Future Improvement}
+
+\begin{itemize}
+  \item \textbf{Motor Model}: Acceleration decreases with speed (motors produce less torque at high RPM). For example:
+  \[
+    a(v) = a_{\text{max}}\Big(1 - \frac{v}{v_{\text{free}}}\Big),
+  \]
+  where $v_{\text{free}}$ is the motor’s free (no-load) speed.
+  \item \textbf{Friction and Drag}: Include frictional forces (wheel friction, air resistance) in the model. These forces oppose motion and reduce net acceleration, especially at higher speeds.
+  \item \textbf{Full Dynamics}: Model the robot’s full dynamics (mass, rotational inertia) for more realistic acceleration behavior.
+  \item \textbf{Numerical Refinements}: Use more advanced numerical methods (adaptive integration steps, etc.) to improve the accuracy of the motion profile calculations.
+\end{itemize}
+
+\section{Further Learning Resources}
+
+\begin{itemize}
+  \item \textbf{YouTube - "The Continuity of Splines":} Deep dive into spline curves by Freya Holmér (\url{https://www.youtube.com/watch?v=jvPPXbo87ds})
+  \item \textbf{Khan Academy:} Derivatives and Integrals (introductory calculus lessons)
+  \item \textbf{Feynman Lectures on Physics}, Vol.~1 (insightful treatment of motion in Chapter 8)
+  \item \textbf{MIT OCW:} 18.01 Single Variable Calculus (free online course materials)
+\end{itemize}
+
+\section{Conclusion}
+
+We have shown how to build a motion profiler that:
+\begin{itemize}
+  \item Defines a path with cubic Béziers
+  \item Uses calculus and numerical methods to track arc‐length
+  \item Computes acceleration, curvature, and keyframe limits
+  \item Steps along the path with Newton–Raphson root-finding
+  \item Outputs \((v,\omega)\) for closed-loop control (e.g.\ feeding into a controller like RAMSETE)
+\end{itemize}
+
+This approach blends math, programming, and robotics in an accessible, step-by-step way. By understanding the underlying methods (and their limitations), a student can extend and refine the system to handle more complex real-world conditions.
+
+\newpage
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+\bibitem{bezier}
+Farin, G. (2002). \emph{Curves and Surfaces for CAGD}. Morgan Kaufmann.
+\bibitem{ramsete}
+Coulter, R.~C. (1992). Implementation of the pure pursuit path tracking algorithm.
+\bibitem{gauss}
+Abramowitz, M., \& Stegun, I.~A. (1964). \emph{Handbook of Mathematical Functions}.
+\end{thebibliography}
+
+\end{document}

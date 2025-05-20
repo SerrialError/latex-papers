@@ -1,0 +1,161 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{Comparison of Drive Systems\\Velocity and Force Derivations}
+\author{SerrialError}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section*{1. Coordinate Definitions}
+
+Let:
+\begin{itemize}
+    \item \( v_x \): Robot velocity in x (strafe)
+    \item \( v_y \): Robot velocity in y (forward)
+    \item \( \omega \): Angular velocity (yaw)
+    \item \( v_{\text{wheel}} \): Wheel tangential speed
+    \item \( F_{\text{wheel}} \): Force applied at wheel-ground contact
+\end{itemize}
+
+Assume:
+\begin{itemize}
+    \item Ideal conditions: no slippage or losses
+    \item All wheels provide the same torque \( \tau \) and spin with speed \( v \)
+\end{itemize}
+
+
+
+\section*{2. X-Drive Derivation}
+
+\subsection*{2.1 Wheel Velocity Vectors}
+
+Each wheel is mounted at a 44° angle. Thus:
+
+\[
+\vec{v}_{\text{wheel}} = \frac{v}{\sqrt{2}} \cdot
+\begin{bmatrix}
+\pm 1 \\
+1
+\end{bmatrix}
+\]
+
+\subsection*{2.2 Net Robot Velocity}
+
+To move forward:
+
+\[
+v_y = 2 \cdot \frac{v}{\sqrt{2}} = \sqrt{2} \cdot v
+\]
+
+Similarly for strafe velocity,
+
+\[
+v_x = 2 \cdot \frac{v}{\sqrt{2}} = \sqrt{2} \cdot v
+\]
+
+assuming wheels configured to strafe.
+
+\subsection*{2.3 Force Projection}
+
+\[
+F_y = 2 \cdot \left( \frac{F}{\sqrt{2}} \right) = \sqrt{2} \cdot F
+\quad , \quad
+F_x = \sqrt{2} \cdot F
+\]
+
+
+\section*{3. Mecanum Drive Derivation}
+
+\subsection*{3.1 Contact Velocity via Rollers}
+
+Roller directs velocity at 44°:
+
+\[
+\vec{v}_{\text{contact}} = \frac{v}{\sqrt{2}} \cdot
+\begin{bmatrix}
+\pm 1 \\
+1
+\end{bmatrix}
+\]
+
+\subsection*{3.2 Force Perpendicular to Roller}
+
+\[
+F_{\perp} = F \cdot \cos(44^\circ) = \frac{F}{\sqrt{2}}, \quad
+F_y = \frac{F_{\perp}}{\sqrt{2}} = \frac{F}{2}
+\]
+
+\subsection*{3.3 Net Force and Velocity}
+
+Total force and velocity contributions from 4 wheels:
+
+\[
+F_{\text{robot}} = 4 \cdot \frac{F}{2} = 2F \quad \text{(total)} \quad , \quad
+v_y^{\text{robot}} = 4 \cdot \frac{v}{2} = 2v \quad \text{(total)}
+\]
+
+Assuming symmetrical contributions to \( v_x \), similarly,
+
+\[
+v_x^{\text{robot}} = 2v \quad , \quad F_x^{\text{robot}} = 2F
+\]
+
+
+
+\section*{4. Tank (Differential) Drive Derivation}
+
+\subsection*{4.1 Geometry}
+
+Two wheels: Left (L) and Right (R), separated by width \( d \)
+
+\subsection*{4.2 Velocity Equations}
+
+\[
+v_y = \frac{v_L + v_R}{2}, \quad
+\omega = \frac{v_R - v_L}{d}
+\]
+
+\subsection*{4.3 Net Velocity and Force}
+
+Net forward velocity is directly average of wheel velocities:
+
+\[
+v_{\text{net}} = v_y = \frac{v_L + v_R}{2}
+\]
+
+Net force applied forward is sum of both wheels:
+
+\[
+F_{\text{net}} = F_L + F_R = 2F
+\]
+
+No strafe component (non-holonomic).
+
+
+
+\section*{5. Grand Comparison Table}
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+\textbf{Drive} & \textbf{Net Velocity} & \textbf{Net Force} \\
+\hline
+X-Drive & \( \sqrt{2} v \) & \( \sqrt{2} F \) \\
+\hline
+Mecanum & \( v \) & \( F \) \\
+\hline
+Tank & \( \frac{v_L + v_R}{2} \) & \( 2F \) \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+\end{document}
