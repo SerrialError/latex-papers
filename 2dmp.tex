@@ -264,11 +264,45 @@ v_{\text{curve}}(t)
 \] 
 where \(w\) is the track width (distance between the left and right wheels). 
 
-\paragraph{Why it works.} The centripetal acceleration is \(a_c = \frac{v^2}{R}\). As turns get tighter (smaller \(R\)), lateral forces increase. The formula above reduces speed as needed to avoid skidding or instability:
-\begin{itemize}
-  \item When \(R \gg w/2\): \(v_{\text{curve}} \approx v_{\max}\) (on gentle curves, you can go full speed).
-  \item When \(R \to 0\): \(v_{\text{curve}} \to 0\) (for very sharp turns, you must crawl).
-\end{itemize}
+\paragraph{Why it works.}
+We start with the differential drive kinematic equations:
+\[
+V_l = v - r \cdot \omega \quad \text{and} \quad V_r = v + r \cdot \omega,
+\]
+where \(v\) is the linear velocity, \(\omega\) is the angular velocity, and \(r\) is half the track width (the distance from the center of the robot to either wheel).
+
+We also know that \(\omega = v \cdot \kappa\), by the definition of angular velocity, where \(\kappa\) is the curvature of the path. Substituting into the equations and factoring gives:
+\[
+V_l = v \cdot (1 - r \cdot \kappa), \quad V_r = v \cdot (1 + r \cdot \kappa).
+\]
+
+Each wheel must stay within its maximum velocity, so we create two inequalities:
+\[
+|v \cdot (1 - r \cdot \kappa)| \le v_{\max}, \quad |v \cdot (1 + r \cdot \kappa)| \le v_{\max}.
+\]
+
+Since \(v \ge 0\), we can take \(v\) out of the absolute value and divide both sides:
+\[
+\max\left(|1 - r \cdot \kappa|,\; |1 + r \cdot \kappa|\right) \le \frac{v_{\max}}{v}.
+\]
+
+Noting that the maximum of \(|1 - r \cdot \kappa|\) and \(|1 + r \cdot \kappa|\) is always \(1 + |r \cdot \kappa|\), we simplify to:
+\[
+1 + |r \cdot \kappa| \le \frac{v_{\max}}{v} \quad \Rightarrow \quad v \le \frac{v_{\max}}{1 + |r \cdot \kappa|}.
+\]
+
+This tells us how fast the center of the robot can move without exceeding the speed limit of either wheel during a turn.
+
+Now, since curvature is defined as \(\kappa = \frac{1}{R(t)}\), where \(R(t)\) is the radius of curvature of the path, we can substitute \(|r \cdot \kappa| = \frac{r}{R(t)}\). Plugging this into the inequality gives:
+\[
+v \le \frac{v_{\max}}{1 + \frac{r}{R(t)}} = v_{\max} \cdot \frac{R(t)}{R(t) + r}.
+\]
+
+This gives the final form:
+\[
+v_{\text{curve}}(t) = v_{\max} \cdot \frac{R(t)}{R(t) + r},
+\]
+which is a more geometric way of expressing the speed limit based on curvature and robot geometry.
 
 \section{Keyframe Velocity Interpolation}
 
