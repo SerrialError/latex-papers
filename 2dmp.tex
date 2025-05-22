@@ -78,7 +78,14 @@ There are multiple ways to describe a smooth curve:
   \item \textbf{Catmull--Rom Splines:} A type of spline that passes through a series of given waypoints. The curve is calculated to smoothly interpolate through all the points, making it easy to create paths through specific locations.
 \end{itemize}
 
-We chose cubic Bezier for its balance of simplicity and control.
+We chose cubic Bezier for its balance of simplicity and control. The following are the functions that describe the x and y coordinates of the cubic Bezier curve.
+
+\[
+\begin{aligned}
+x(t) &= (1 - t)^3 x_0 + 3(1 - t)^2 t\, x_1 + 3(1 - t)\, t^2 x_2 + t^3 x_3 \\
+y(t) &= (1 - t)^3 y_0 + 3(1 - t)^2 t\, y_1 + 3(1 - t)\, t^2 y_2 + t^3 y_3
+\end{aligned}
+\]
 
 \section{What are Keyframes?}
 
@@ -238,13 +245,6 @@ v\,dv = a\,ds
 \] 
 so rearranging gives $\Delta s = (v^2 - v_0^2)/(2a)$.
 
-\paragraph{Example.} Accelerating from \(0\) to \(2\,\mathrm{m/s}\) with \(a = 1\,\mathrm{m/s^2}\):
-\[
-\Delta s = \frac{2^2 - 0^2}{2 \cdot 1} = \frac{4}{2} = 2\,\mathrm{m}\,.
-\]
-
-\paragraph{Choosing $a$ values.} In practice, the maximum acceleration $a_{\max}$ and braking deceleration (often taken equal in magnitude for simplicity) are determined by the robot's motors and traction. You can estimate these values from motor specifications or experiments. For example, if a robot can accelerate from 0 to $2~\mathrm{m/s}$ in about $2$ seconds, then a rough estimate for $a_{\max}$ is $1~\mathrm{m/s^2}$. In reality, $a_{\max}$ might decrease as the robot speeds up (due to motor torque limits and drag), and $a_{\text{max decel}}$ might be limited by wheel grip (to prevent skidding).
-
 \section{Curvature and Turning Speed}
 
 For a 2D path \(\mathbf{r}(t) = (x(t), y(t))\), curvature is defined as:
@@ -313,28 +313,54 @@ Suppose we have keyframe pairs \((s_i, v_i)\), which define desired velocities \
 v_{\text{interp}}(s) = v_i + \lambda\big(v_{i+1} - v_i\big)\,.
 \]
 
-\paragraph{Why it works.} This simple linear interpolation ensures:
-\begin{itemize}
-  \item Smooth, gradual changes between keyframe speeds (no sudden jumps).
-  \item A predictable and easily adjustable speed profile.
-  \item Flexibility in motion design (e.g., you can insert slow-down or speed-up points as needed).
-\end{itemize}
+\paragraph{Note:} This is just a fancy way of reforming the formula for a linear equation: \(f(x) = m \cdot x + b\) where \(\lambda = m\), \(x = (v_{i+1} - v_i\big)\), and \(b = v_i\).
 
 \section{Velocity Planning Algorithm}
 
-At each control cycle (each small time step), the system computes a safe and desired linear velocity $v_{\text{desired}}$ as follows:
+Ok, now we put it all together. We now follow section 2 that describes our goals. 
+
 \begin{enumerate}
   \item Compute \(v_{\max}\): the robot’s absolute maximum speed (a constant limit).
-  \item Compute \(v_{\rm accel}\): the speed limit imposed by acceleration/braking distance (how fast we can go without overshooting the remaining distance). This comes from the kinematic distance formula above.
+
+
+  \item Compute \(v_{\rm accel}\): the speed limit imposed by acceleration distance (which also includes max acceleration).
+
+	This is pretty easy for acceleration and can be done throughout the motion profile. We can just do \(v_{\rm accel} = v(t) + ( a_{\rm max} * \Delta t)\). Deceleration for any part of the curve can be done similarly \(v_{\rm decel} = v(t) - ( a_{\rm max} * \Delta t)\). However there is another part of deceleration, we have to make sure that the robot decelerates to the exit velocity in time (which can't simply be done with this formula). We want to first find when we should start decelerating. This can be found by rearranging the kinematic equations in section 8. Here is the equation to find the deceleration distance \(d_{\rm accel}\) based on \(a_{\rm max}\) and \(v_{\rm max}\) (which are both positive).
+
+\[
+	d_{\rm accel} = \frac{v_{\rm exit}^2 - v_{\rm max}^2}{-2 \cdot a_{\rm max}}
+\].
+
+We want to now find the maximum velocity \( v \) such that the robot can still decelerate (when the distance traveled along the path is greater than the  \(d_{\rm accel}\) to \( v_{\text{end}} \) using the same \( a_{\text{decel}} \) (assuming a trapezoidal profile).
+
+We can take the kinematic equation from section 8:
+\[
+v_{\text{end}}^2 = v^2 + 2 \cdot a_{\text{decel}} \cdot d_{\text{remaining}}
+\]
+Substitute the expression for \( a_{\text{decel}} \) from above:
+\[
+v_{\text{end}}^2 = v^2 + 2 \cdot \left( \frac{v_{\text{end}}^2 - v_{\text{max}}^2}{2 \cdot d_{\text{decel}}} \right) \cdot d_{\text{remaining}}
+\]
+Simplify:
+\[
+v^2 = v_{\text{end}}^2 - \left( \frac{d_{\text{remaining}}}{d_{\text{decel}}} \right) (v_{\text{end}}^2 - v_{\text{max}}^2)
+\]
+Finally, solve for \( v \):
+\[
+v = \sqrt{v_{\text{end}}^2 - \left( \frac{d_{\text{remaining}}}{d_{\text{decel}}} \right) (v_{\text{end}}^2 - v_{\text{max}}^2)}
+\]
   \item Compute \(v_{\rm curve}\): the speed limit due to curvature at the robot’s current position (using the turning formula).
   \item Compute \(v_{\rm interp}\): the speed dictated by keyframe interpolation at the current position.
 \end{enumerate}
-Then take the minimum of all these constraints:
+Then we can take the minimum of most of the constraints:
 \[
-v_{\rm desired} = \min\{\,v_{\max},\;v_{\rm accel},\;v_{\rm curve},\;v_{\rm interp}\,\}\,,
+v_{\rm acc desired} = \min\{\,v_{\max},\;v_{\rm accel},\;v_{\rm curve},\;v_{\rm interp}\,\}\,,
 \] 
-which will be the commanded speed for this step.
-
+and combine it with the maximum compared to the max deceleration:
+\[
+v_{\rm desired} = \max\{\,v_{\rm acc desired},\;v_{\rm dec}\,\}\,,
+\] 
+You would then combine this with the max global deceleration as explained in step 1.
 \section{Handling Multiple Path Segments}
 
 Many paths consist of several curve segments (splines) joined end-to-end. We can apply the motion profiling approach to each segment in sequence, while ensuring smooth transitions between segments.
@@ -349,73 +375,84 @@ This way, the robot seamlessly continues from one spline to the next. The parame
 
 \section{Simplified C++ Example}
 
+
 \begin{lstlisting}
 // Compute (v, omega) along a Bezier curve
 std::pair<float,float> computeProfile(
-    const std::vector<Point>& pts, // 4 control points defining the Bezier curve
-    float maxVel,                  // maximum allowed velocity (m/s)
-    float maxAcc,                  // maximum allowed acceleration (m/s^2)
-    float decelDist,               // distance from end at which to begin braking (m)
-    float initVel,                 // initial velocity at the start of the profile (m/s)
-    float exitVel,                 // desired velocity at the end of the profile (m/s)
+    const std::vector<Point>& pts,    // 4 control points defining the Bezier curve
+    float maxVel,                     // v_max: maximum allowed velocity (m/s)
+    float maxAcc,                     // a_max: maximum allowed acceleration (m/s^2)
+    float decelDist,                  // d_decel: distance from end at which to begin braking (m)
+    float initVel,                    // initial velocity at the start of the profile (m/s)
+    float exitVel,                    // v_end: desired velocity at the end of the profile (m/s)
     const std::vector<Keyframe>& kfPts, // sequence of (s, v) keyframe pairs
-    float dt                       // time step for each profile update (s)
+    float dt                          // delta_t: time step for each profile update (s)
 ) {
-    // Static variables preserve values between calls
-    // t_prev: previous parameter t along the curve [0,1]
-    // v_prev: previous output velocity (initialized to initVel)
-    static float t_prev = 0;
-    static float v_prev = initVel;
+    // --- Static state between calls ---
+    static float t_prev = 0;       // previous curve parameter
+    static float v_prev = initVel; // previous velocity
 
-    // 1) Compute the arc-length s at the current parameter t_prev
-    //    arcLength(...) integrates the curve length from t=0 to t_prev
-    float s_curr = arcLength(pts, t_prev);
+    // 1) Current arc-length s_curr
+    float s_curr    = arcLength(pts, t_prev);
+    float total_len = arcLength(pts, 1.0f);
+    float d_rem     = total_len - s_curr;  // remaining distance to end
 
-    // 2) Determine velocity limit due to acceleration/deceleration
-    //    remaining: distance left from s_curr to end of curve (total_length - s_curr)
-    float remaining = arcLength(pts, 1.0f) - s_curr;
-    //    regionDist: distance we can accelerate (if before decelDist) or must decelerate (if within decelDist of end)
-    float regionDist = (s_curr < decelDist ? s_curr : remaining);
-    //    v_accel: maximum speed reachable under accel limits over regionDist
-    float v_accel  = std::sqrt(v_prev*v_prev + 2*maxAcc*regionDist);
+    // 2) Acceleration-based limit (simple Euler)
+    float v_accel = v_prev + maxAcc * dt;
+    //    and simple deceleration (not final brake):
+    float v_decel_simple = v_prev - maxAcc * dt;
 
-    // 3) Determine velocity limit from keyframe constraints
-    //    find the segment [s0, s1] in kfPts that contains current s_curr
+    // 2b) End-deceleration limit:
+    //     v = sqrt( v_end^2 - (d_rem / d_decel) * (v_end^2 - v_max^2) )
+    float v_end_limit = maxVel;
+    if (d_rem <= decelDist) {
+      float ratio = d_rem / decelDist;
+      v_end_limit = std::sqrt(
+        exitVel*exitVel
+        - ratio * (exitVel*exitVel - maxVel*maxVel)
+      );
+    }
+
+    // 3) Keyframe interpolation limit
     int idx = findKeyframeIndex(kfPts, s_curr);
-    float s0 = kfPts[idx].s, s1 = kfPts[idx+1].s;
-    float v0 = kfPts[idx].v, v1 = kfPts[idx+1].v;
-    //    interpolate between v0 and v1 based on where s_curr lies
+    float s0 = kfPts[idx  ].s, v0 = kfPts[idx  ].v;
+    float s1 = kfPts[idx+1].s, v1 = kfPts[idx+1].v;
     float alpha = (s_curr - s0) / (s1 - s0);
-    float v_kf = v0 + alpha * (v1 - v0);
+    float v_kf   = v0 + alpha * (v1 - v0);
 
-    // 4) Determine velocity limit from curvature (turning) constraints
-    //    kappa: curvature at current t_prev (1/R)
+    // 4) Curvature limit
     float kappa = curvature(pts, t_prev);
-    float R      = 1.0f / kappa;   // radius of curvature
-    float w      = 0.29f;         // track width (example value)
-    //    v_curve: max speed so lateral acceleration stays within limits
+    float R      = 1.0f / kappa;     // radius of curvature
+    float w      = 0.29f;            // track width
     float v_curve = maxVel * R / (R + w/2);
 
-    // 5) Combine all velocity limits and clamp to maxVel
-    //    v_des is the desired velocity we can safely achieve
-    float v_des = std::min({ maxVel, v_accel, v_kf, v_curve });
+    // 5) Combine limits:
+    //    - accel:    clamp to simple accel (up)
+    //    - decel:    clamp to simple decel (down) AND end-brake limit
+    float v_up   = std::min(maxVel, v_accel);
+    float v_down = std::max(v_decel_simple, v_end_limit);
+    //    Now enforce all constraints:
+    float v_des = std::min({
+      v_up,
+      v_down,
+      v_kf,
+      v_curve
+    });
 
-    // 6) Advance along the curve by ds = v_des * dt
+    // 6) Advance along curve by ds = v_des * dt
     float ds     = v_des * dt;
-    //    findTForS: solves for new t_next such that arcLength(pts, t_next) - s_curr = ds
     float t_next = findTForS(pts, t_prev, ds);
 
-    // 7) Compute angular velocity omega
-    //    curvature at the new point times linear velocity gives turning rate
+    // 7) Compute angular velocity
     float omega = curvature(pts, t_next) * v_des;
 
-    // 8) Update stored state for next iteration
+    // 8) Update state
     t_prev = t_next;
     v_prev = v_des;
 
-    // Return the computed linear and angular velocities
     return { v_des, omega };
 }
+
 \end{lstlisting}
 
 \paragraph{How to use these outputs.} Send \(v_{\rm desired}\) and \(\omega\) to your drivetrain’s velocity controller (commonly a PID or feedforward velocity controller, which is beyond the scope of this guide). A typical differential-drive conversion is:
