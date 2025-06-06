@@ -373,86 +373,45 @@ At the end of one segment, the next segment begins with the robot continuing at 
 
 This way, the robot seamlessly continues from one spline to the next. The parameter $t$ resets to 0 at the start of the new segment, and we proceed with the same calculations on the new segment. (If using keyframes, you can also set a keyframe at the segment boundary to enforce a specific speed at that point.)
 
-\section{Simplified C++ Example}
+\section{Simplified C++ Example from \href{https://github.com/SerrialError/vmplib}{VMPLib}}
 
 
 \begin{lstlisting}
-// Compute (v, omega) along a Bezier curve
-std::pair<float,float> computeProfile(
-    const std::vector<Point>& pts,    // 4 control points defining the Bezier curve
-    float maxVel,                     // v_max: maximum allowed velocity (m/s)
-    float maxAcc,                     // a_max: maximum allowed acceleration (m/s^2)
-    float decelDist,                  // d_decel: distance from end at which to begin braking (m)
-    float initVel,                    // initial velocity at the start of the profile (m/s)
-    float exitVel,                    // v_end: desired velocity at the end of the profile (m/s)
-    const std::vector<Keyframe>& kfPts, // sequence of (s, v) keyframe pairs
-    float dt                          // delta_t: time step for each profile update (s)
-) {
-    // --- Static state between calls ---
-    static float t_prev = 0;       // previous curve parameter
-    static float v_prev = initVel; // previous velocity
-
-    // 1) Current arc-length s_curr
-    float s_curr    = arcLength(pts, t_prev);
-    float total_len = arcLength(pts, 1.0f);
-    float d_rem     = total_len - s_curr;  // remaining distance to end
-
-    // 2) Acceleration-based limit (simple Euler)
-    float v_accel = v_prev + maxAcc * dt;
-    //    and simple deceleration (not final brake):
-    float v_decel_simple = v_prev - maxAcc * dt;
-
-    // 2b) End-deceleration limit:
-    //     v = sqrt( v_end^2 - (d_rem / d_decel) * (v_end^2 - v_max^2) )
-    float v_end_limit = maxVel;
-    if (d_rem <= decelDist) {
-      float ratio = d_rem / decelDist;
-      v_end_limit = std::sqrt(
-        exitVel*exitVel
-        - ratio * (exitVel*exitVel - maxVel*maxVel)
-      );
+VelocityLayout TrapezoidalProfile::step() {
+    if (isFinished()) {
+        return { 0.0f, 0.0f, time_accum_ };
     }
 
-    // 3) Keyframe interpolation limit
-    int idx = findKeyframeIndex(kfPts, s_curr);
-    float s0 = kfPts[idx  ].s, v0 = kfPts[idx  ].v;
-    float s1 = kfPts[idx+1].s, v1 = kfPts[idx+1].v;
-    float alpha = (s_curr - s0) / (s1 - s0);
-    float v_kf   = v0 + alpha * (v1 - v0);
+    time_accum_ += dt_;
+    s_current_ = sFunction(control_, prev_t_);
 
-    // 4) Curvature limit
-    float kappa = curvature(pts, t_prev);
-    float R      = 1.0f / kappa;     // radius of curvature
-    float w      = 0.29f;            // track width
-    float v_curve = maxVel * R / (R + w/2);
+    float keyframe_lim  = computeKeyframeLimit();
+    float curvature_lim = computeCurvatureVelocityLimit(prev_t_);
+    float accel_lim     = computeAccelerationLimit(s_current_);
+    float decel_lim     = computeDecelerationLimit(s_current_);
 
-    // 5) Combine limits:
-    //    - accel:    clamp to simple accel (up)
-    //    - decel:    clamp to simple decel (down) AND end-brake limit
-    float v_up   = std::min(maxVel, v_accel);
-    float v_down = std::max(v_decel_simple, v_end_limit);
-    //    Now enforce all constraints:
-    float v_des = std::min({
-      v_up,
-      v_down,
-      v_kf,
-      v_curve
-    });
+    float desired_linear = std::min({ curvature_lim,
+                                      accel_lim,
+                                      keyframe_lim,
+                                      max_lin_vel_ });
+    // float desired_linear = std::max({desired_linear_without_decel, decel_lim});
+    float deltaS = desired_linear * dt_;
+    float next_t = findNextT(s_current_, deltaS);
 
-    // 6) Advance along curve by ds = v_des * dt
-    float ds     = v_des * dt;
-    float t_next = findTForS(pts, t_prev, ds);
+    float kappa = curvature(control_, next_t);
+    float turning_component = kappa * desired_linear;
 
-    // 7) Compute angular velocity
-    float omega = curvature(pts, t_next) * v_des;
+    Pose newPose = findXandY(control_, next_t);
+    poses_.push_back(newPose);
 
-    // 8) Update state
-    t_prev = t_next;
-    v_prev = v_des;
+    VelocityLayout vlay{ desired_linear, turning_component, time_accum_ };
+    velocities_.push_back(vlay);
 
-    return { v_des, omega };
+    prev_t_    = next_t;
+    cur_speed_ = desired_linear;
+
+    return vlay;
 }
-
 \end{lstlisting}
 
 \paragraph{How to use these outputs.} Send \(v_{\rm desired}\) and \(\omega\) to your drivetrain’s velocity controller (commonly a PID or feedforward velocity controller, which is beyond the scope of this guide). A typical differential-drive conversion is:
