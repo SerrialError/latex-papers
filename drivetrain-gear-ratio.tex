@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{siunitx}  % for proper units formatting
+\begin{document}
+
+The arc‑length \(s\) formula in degrees is
+\[
+  s = \frac{\theta}{360^\circ}\,\pi\,d.
+\]
+If the timestep of \(\Delta\theta\) (in degrees) is one second, then the formula for RPM is
+\[
+  \mathrm{RPM}
+  = \frac{\Delta\theta}{360^\circ}\times 60
+  = \frac{\Delta\theta}{6}.
+\]
+You can then take the derivative of the arc‑length formula with respect to time to give the linear velocity \(v\).  Substituting the definition of RPM, you get
+\[
+  v = \frac{\mathrm{RPM}}{60}\,\pi\,d
+  = \frac{RPM\,g_r\,\pi\,d}{60},
+\]
+where \(g_r\) is the gear ratio.
+
+Next we can include motor dynamics to develop a more robust model of the robot.  First we take the definition of voltage (Ohm's Law) as it relates to a motor (the motor also acting as a generator in some sense):
+\[
+  V = I\,R + E_{\mathrm{back}},
+\]
+where \(V\) is the applied voltage, \(I\) the current, \(R\) the winding resistance, and \(E_{\mathrm{back}}\) the back‑electromotive force (EMF).
+
+\[
+  E_{\mathrm{back}} = k_{e}\,\omega.
+\]
+
+We also know that the applied voltage is countered by the back EMF; therefore,
+\[
+  \omega_{0} = \frac{V}{k_{e}}.
+\]
+
+Also, the more current you put in, the more torque is output, hence:
+\[
+  \tau = k_{t}\,I,
+\]
+with \(k_{t}=k_{e}\) by Faraday's law.  Next we rearrange Ohm's Law to get the no‑load current:
+\[
+  I_{0} = \frac{V}{R}.
+\]
+Substituting into the torque equation gives:
+\[
+  \tau = k_{t}\,\frac{V}{R}.
+\]
+
+Returning to the motor voltage equation and substituting \(E_{\mathrm{back}}\),
+\[
+  V = I\,R + k_{e}\,\omega.
+\]
+Substitute \(I = \tau/k_{t}\) to obtain:
+\[
+  V = \frac{\tau}{k_{t}}\,R + k_{e}\,\omega.
+\]
+Rearranging,
+\[
+  k_{e}\,\omega = V - \frac{\tau}{k_{t}}\,R.
+\]
+Dividing both sides by \(k_{e}\):
+\[
+  \omega = \frac{V}{k_{e}} - \frac{\tau\,R}{k_{t}\,k_{e}}.
+\]
+Noting that \(\omega_{0} = V/k_{e}\) and \(\tau_{0} = k_{t}\,I_{0} = k_{t}\,V/R\), we can write:
+\[
+  \omega = \omega_{0} - \frac{\tau}{\tau_{0}}\,\omega_{0}
+  = \omega_{0}\Bigl(1 - \tfrac{\tau}{\tau_{0}}\Bigr).
+\]
+
+Now \(\omega\) is the no-load speed that you can find using the gear ratio's and RPM. \(1 - \tfrac{\tau}{\tau_{0}}\) is the load factor which can be found where \(tau\) is the torque of the wheel and \(\tau_{0}\) is the available torque, from the motor. To find the available torque you can use the gear ratio, radius of the wheel, and stall torque, using this formula (where \(\eta\) is efficiency and is around 80\% for a vex motor and gear box)
+
+\[
+  \tau_{\mathrm{avail}} = \tau_{0} \cdot g_r \cdot \eta
+\]
+
+To find the torque on the wheel we can use the defenition of force as is relates to friction (where \(F_{f}\) is friction force).
+
+\[
+  \tau_{f} = F_{f} \cdot r
+\]
+
+For finding rolling resistence which in this case is friction force you can use the formula
+\[
+  F_{rr} = C_{rr} \cdot N
+\]
+For this feild and robot we will use around 0.01 for \(C_{rr}\).
+
+Finally we can plug in this formula to our formula to find linear velocity and we get the total equation:
+
+\[
+  v = \frac{RPM\,g_r\,\pi\,d}{60}\Bigl(1 - \tfrac{\tau_{0} \cdot g_r \cdot \eta}{C_{rr} \cdot N \cdot r}\Bigr)
+\]
+\end{document}
