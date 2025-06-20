@@ -110,5 +110,34 @@ However we also know \(F_{net} = F - F_f\) where \(F_f\) is the Friction force w
 \[
   a = \frac{\frac{\tau_{avg} \cdot g_r \cdot \eta}{r} - C_{rr} \cdot N}{m}
 \]
+Now that we have both the average acceleration and max velocity we can find the time it takes to get to a distance based on a motion profile. We can use a trapezoidal motion profile or a triangular motion profile based on the distance. The trapezoidal motion profile increases in speed (at the average acceleration) until it hits the max velocity. Then it will stay at the max velocity until the robot will hit 0 velocity at max deceleration. This forms the shape of a trapezoid. A triangular motion profile is used if there isn't enough distance for there to be time where the robot can be at the max velocity and therefore only has time for average acceleration and deceleration.
+
+First to find the distance to accelerate we can use kinematics formulas:
+
+\[
+  d = v_{0}t + \frac{1}{2}at^2, v = v_{0} + at
+\]
+
+We know that the initial velocity for each leg is 0 so we can simplify the formula to:
+\[
+  d = \frac{1}{2}at^2, v = at
+\]
+We can also change this to find time instead
+\[
+  t = \frac{v}{a}
+\]
+Substituting we get
+\[
+  d = \frac{v^2}{2a}
+\]
+Next we change this to time and get
+\[
+  t = 2\sqrt{d/a}
+\]
+Now finding the time to accelerate and decelerate for the trapezoidal motion profile we know that \(t = \frac{v}{a}\) so that would be the time to accelerate. Now we can subract 2 times that by the total distance and divide it by time to get the cruise time, giving the following formula for the time to reach a distance using a trapezoidal motion profile:
+\[
+  2\frac{v}{a} + \frac{d-2{\frac{v^2}{a}}}{v}
+\]
+If the distance is greater than \(\frac{v^2}{a}\) then we use the trapezoidal motion profile, otherwise we use the triangular motion profile.
 
 \end{document}
