@@ -123,5 +123,5 @@ vec(
 
 and the vector
 
-$ b = vec(k_max, k_min, 0, 0, tau_r, tau_r) $
+$ b = vec(k_max, -k_min, 0, 0, tau_r, tau_r) $
 
