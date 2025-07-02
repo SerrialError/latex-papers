@@ -54,7 +54,7 @@ We can then use the simplex algorithm to solve this. It says to maximize $c^T$ x
 - $b$ is the right-hand side vector
 - $k in RR$
 
-First, let's put down what we know. We know the decision variable vector $x$ would be ${F_(m 1),F_(m 2),F_(m 3),F_(m 4),F_(o 1),F_(o 2)}$.
+First, let's put down what we know. We know the decision variable vector $x$ would be $vec(F_(m 1),F_(m 2),F_(m 3),F_(m 4),F_(o 1),F_(o 2))$.
 
 Back from what we found before because of that we know the decision variable vector $c$ is $vec(0, 2, 2, 0, 1, 1)$.
 
@@ -124,4 +124,3 @@ vec(
 and the vector
 
 $ b = vec(k_max, -k_min, 0, 0, tau_r, tau_r) $
-
