@@ -1,3 +1,9 @@
+#align(center)[
+  #figure(
+  image("asterisk-mecanum-diagram.png", width: 60%),
+)
+]
+
 $F_(r x m) = F_(m 2) + F_(m 3) - F_(m 1) - F_(m 4)$, $F_(r x o) = 0$
 
 $F_(r y m) = F_(m 1) + F_(m 2) + F_(m 3) + F_(m 4)$, $F_(r y o) = F_(o 1) + F_(o 2)$
@@ -41,7 +47,7 @@ Simplifying we then get
 
 $ 2 F_(m 2) + 2 F_(m 3) + F_(o 1) + F_(o 2) $
 
-We can then use the simplex algorithm to solve this. It says to maximize $c^T$ x subject to $A x lt.eq b$ and $x gt.eq k$ where
+We can then use the simplex algorithm to solve this. To input into the simplex algorithm it says to maximize $c^T$ x subject to $A x lt.eq b$ and $x gt.eq k$ where
 
 - $A$ is an $m times n$ matrix
 - $b in RR^m$
@@ -124,3 +130,5 @@ vec(
 and the vector
 
 $ b = vec(k_max, -k_min, 0, 0, tau_r, tau_r) $
+
+We can then put this into a simplex (or other algorithm) solver and it should output the correct answer!
