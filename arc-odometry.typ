@@ -30,17 +30,15 @@ $l = r theta$ by the arc length formula in radians
 
 $l = (c + Delta x_v) theta$ by substitution
 
-$l / theta - Delta x_v = c + Delta x_v$ by division
+$l / theta = c + Delta x_v$ by division
 
-$l / theta - Delta x_v - Delta x_v = c$ by subtraction
+$l / theta - Delta x_v = c$ by subtraction
 
 $overline(A B) tilde.equiv overline(B C)$ because radii $tilde.equiv$
 
 $A B = B C$ by the definition of $tilde.equiv$ segments
 
 $triangle.stroked.t A B C$ is an isosceles $triangle.stroked.t$ by the definition of an isosceles $triangle.stroked.t$
-
-Define the base $angle$ other than $alpha$ inside of $triangle.stroked.t$ $A B C$ to be $gamma$
 
 $alpha tilde.equiv angle B C A$ by base $angle$'s $tilde.equiv$
 
