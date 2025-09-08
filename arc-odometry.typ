@@ -19,9 +19,9 @@
   content((3,1.2), $ l $)
 })
 
-Given $l$ and $theta$ find $Delta x$ and $Delta y$
+Given the measures of $l$ and $theta$; AC is an arc; find $Delta x$ and $Delta y$
 
-$l$ and $theta$ are given because they are given
+The measures of $l$ and $theta$ are given and AC is an arc because they are given
 
 $l = r theta$ by the arc length formula in radians
 
@@ -29,13 +29,19 @@ $l = a theta$ by substitution
 
 $l / theta = a$ by division
 
+$overline(A B) tilde.equiv overline(B C)$ because radii $tilde.equiv$
+
+$A B = B C$ by the definition of $tilde.equiv$ segments
+
+$triangle.stroked.t A B C$ is an isosceles $triangle.stroked.t$ by the definition of an isosceles $triangle.stroked.t$
+
 Define the base $angle$ other than $alpha$ inside of $triangle.stroked.t$ $A B C$ to be $gamma$
 
-$alpha tilde.equiv gamma$ by base $angle$'s $tilde.equiv$
+$alpha tilde.equiv angle B C A$ by base $angle$'s $tilde.equiv$
 
-$alpha = gamma$ by the definition of $tilde.equiv$ $angle$'s
+$alpha = m angle B C A$ by the definition of $tilde.equiv$ $angle$'s
 
-$pi = theta + alpha + gamma$ by the $angle$ sum Th. in radians
+$pi = theta + alpha + m angle B C A$ by the $angle$ sum Th. in radians
 
 $pi = theta + alpha + alpha$ by substitution
 
@@ -45,9 +51,7 @@ $pi - theta = 2 alpha$ by subtraction
 
 $(pi - theta) / 2 = alpha$ by subtraction
 
-$(pi) / 2 - theta / 2 = alpha$ by the distributive property
-
-$pi / 2 - theta / 2 = alpha$ by substitution
+$pi / 2 - theta / 2 = alpha$ by the distributive property
 
 $a / sin(alpha) = b / sin(theta)$ by the Law of Sines
 
