@@ -91,15 +91,13 @@ $(2 sin(theta / 2) l) / (theta) cos(theta / 2) = Delta y$ and $(2 sin(theta / 2)
 
 $(2 sin(theta / 2) l cos(theta / 2)) / (theta) = Delta y$ and $(2 sin(theta / 2) l sin(theta / 2))/ (theta) = - Delta x$ by the associative property
 
-$sin(u) cos(v) = 1 / 2 [sin(u + v) + sin(u - v)]$ by the product-to-sum formula
-
-$(2 sin^2(theta / 2) l)/ (theta) = - Delta x$ and $(2 ( 1 / 2 [sin(theta / 2 + theta / 2) + sin(theta / 2 - theta /2)]) l) / (theta) = Delta y$ by substitution
+$(sin(theta) l) / (theta) = Delta y$ and $(2 sin^2(theta / 2) l)/ (theta) = - Delta x$ by substitution
 
 $- (2 sin^2(theta / 2) l)/ theta = Delta x$ by division
 
 $sin^2(x) = (1 - cos(2 x))/2$ by the sine lowering power formula
 
-$- (2 ((1 - cos(theta)) / 2) l)/ theta = Delta x$ and $(sin(theta) l) / (theta) = Delta y$ by substitution
+$- (2 ((1 - cos(theta)) / 2) l)/ theta = Delta x$ by substitution
 
 $- ((1 - cos(theta)) l)/ theta = Delta x$ by the associative property
 
