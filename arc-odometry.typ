@@ -24,7 +24,7 @@
 
 Given the measures of $l$ and $theta$; AC is an arc; find $Delta x$ and $Delta y$
 
-The measures of $l$ and $theta$ are given and AC is an arc because they are given
+The measures of $l$ and $theta$ and AC is an arc because they are given
 
 $l = r theta$ by the arc length formula in radians
 

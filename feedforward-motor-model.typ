@@ -1,18 +1,18 @@
-Given
+Given (for all proofs below)
 
-$V = I R + E_("mf")$ Kirchhoff’s Voltage Law (KVL) for a DC motor
+$V = I R + E_("mf")$ by Ohm's Law with back EMF for a DC motor
 
-$E_("mf") = omega kappa_e$ Back EMF equation of a motor
+$E_("mf") = omega kappa_e$ by the Back EMF equation of a motor
 
-$tau = I kappa_t$ Motor torque equation
+$tau = I kappa_t$ by the Motor torque equation
 
-$tau = J alpha + B omega + tau_("load") "sign"(omega)$ Rotational equation of motion
+$tau = J alpha + B omega + tau_("load") "sign"(omega)$ by the Rotational equation of motion
 
-Define the $w$ subnotation by the wheel and the $r$ subnotation of the robot minus the wheel of that variable.
+The value of $omega$ and $alpha$ (Only for the proof directly below this)
 
-Find V voltage at some initial angular velocity $omega$ and the wanted angular acceleration $alpha$
+Find $V$ voltage
 
-Note: I, J, $tau_("load") "sign"(omega)$, R, B, $omega$, $alpha$, $kappa_t$, and $kappa_e$ are given. So therefore we only need to find V as it is the only remaining variable.
+$V = I R + E_("mf")$, $E_("mf") = omega kappa_e$, $tau = I kappa_t$, $tau = J alpha + B omega + tau_("load") "sign"(omega)$, and the value of $omega$ and $alpha$ because they are given
 
 $I kappa_t = J alpha + B omega + tau_("load") "sign"(omega)$ By substitution
 
@@ -52,7 +52,13 @@ Define a function $V$ by $V(omega, alpha) = K_a alpha + K_v omega + K_s "sign"(o
 
 $qed$
 
-Find the maximum $alpha$ angular acceleration at some angular velocity
+Given (Only for the proof directly below this)
+
+The value of $omega$
+
+Find the maximum $alpha$ angular acceleration at some angular velocity $omega$
+
+$V = I R + E_("mf")$, $E_("mf") = omega kappa_e$, $tau = I kappa_t$, $tau = J alpha + B omega + tau_("load") "sign"(omega)$, and the value of $omega$ because they are given
 
 Note: The VEX motor controller has current limits so we must also account for those.
 
