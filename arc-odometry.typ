@@ -15,7 +15,8 @@
   content((6.4,7.9), $C$)
   line((r,0),(x, y))
   line((x, y),(x,0))
-  content((7,-0.2), $ Delta x $)
+  content((7.5,-0.2), $ Delta x $)
+  content((6.4,-0.2), $ M $)
   content((6,4), $ Delta y $)
   content((9,5), $ l $)
   rect((7, -3),(13, 3))
@@ -26,82 +27,60 @@ Given the measures of $l$ and $theta$; AC is an arc; find $Delta x$ and $Delta y
 
 The measures of $l$ and $theta$ and AC is an arc because they are given
 
+$c$ is a radius by the definition of a radius
+
+$c tilde.equiv r$ by the reflexive property
+
+$c = r$ by the definition of $tilde.equiv$ segments
+
 $l = r theta$ by the arc length formula in radians
 
-$l = (c + Delta x_v) theta$ by substitution
+$l = c theta$ by substitution
 
-$l / theta = c + Delta x_v$ by division
+$l / theta = c$ by division
 
-$l / theta - Delta x_v = c$ by subtraction
+$sin(theta) = "opposite" / "hypotenuse"$ by the definition of sine in right angle trigonometry
 
-$overline(A B) tilde.equiv overline(B C)$ because radii $tilde.equiv$
+$cos(theta) = "adjacent" / "hypotenuse"$ by the definition of cosine in right angle trigonometry
 
-$A B = B C$ by the definition of $tilde.equiv$ segments
+$overline(A B) tilde.equiv c$ because radii $tilde.equiv$
 
-$triangle.stroked.t A B C$ is an isosceles $triangle.stroked.t$ by the definition of an isosceles $triangle.stroked.t$
+$Delta x tilde.equiv overline(M A)$ by the reflexive property
 
-$alpha tilde.equiv angle B C A$ by base $angle$'s $tilde.equiv$
+$A B = c$ and $M A = Delta x$ by the definition of $tilde.equiv$ segments
 
-$alpha = m angle B C A$ by the definition of $tilde.equiv$ $angle$'s
+$A B = B M + M A$ by the sement addition postulate
 
-$pi = theta + alpha + m angle B C A$ by the $angle$ sum Th. in radians
+$A B - M A = B M$ by subtraction
 
-$pi = theta + alpha + alpha$ by substitution
+$c - Delta x = B M$ by substitution
 
-$pi = theta + 2 alpha$ by substitution
+$l / theta - Delta x = B M$ by substitution
 
-$pi - theta = 2 alpha$ by subtraction
+$Delta y$ is an opposite side to $angle theta$ by the definition of an opposite side.
 
-$(pi - theta) / 2 = alpha$ by subtraction
+$overline(B M)$ is an adjacent side to $angle theta$ by the definition of an adjacent side
 
-$pi / 2 - theta / 2 = alpha$ by the distributive property
+$c$ is the hypotenuse of $triangle.stroked.t B M C$ by as the side opposite to the right $angle$ of a $triangle.stroked.t$ is the hypotenuse
 
-$a / sin(alpha) = b / sin(theta)$ by the Law of Sines
+$Delta y tilde.equiv Delta y$, $overline(B M) tilde.equiv overline(B M)$, and $c tilde.equiv c$ by the reflexive property
 
-$(l / theta - Delta x_v) / sin(pi / 2 - theta / 2) = b / sin(theta)$ by substitution
+$Delta y = Delta y$, $B M = B M$, and $c = c$ by the definition of congurent segments
 
-$cos(pi / 2 - x) = sin(x)$ and $sin(pi / 2 - x) = cos(x)$ by the complementary-angle identities
+$Delta y = "opposite"$, $B M = "adjacent"$, and $c = "hypotenuse"$ by substitution
 
-$(l / theta - Delta x_v) / cos(theta / 2) = b / sin(theta)$ by substitution
+$sin(theta) = (Delta y) / c$, $cos(theta) = (B M) / c$ by substitution
 
-$l / (cos(theta / 2) theta) = b / sin(theta)$ by the associative property
+$sin(theta) = (Delta y) / (l / theta)$, $cos(theta) = (c - Delta x) / c$ by substitution
 
-$sin(theta) (l / (cos(theta / 2) theta)) = b$ by multiplication
+$(l / theta) sin(theta) = Delta y$, $c cos(theta) = c - Delta x$ by multiplication
 
-$(sin(theta) l) / (cos(theta / 2) theta) = b$ by the distributive property
+$c cos(theta) - c = - Delta x$ by substraction
 
-$sin(2x) = 2 sin(x) cos(x)$ by the sine double-angle formula
+$- c cos(theta) + c = Delta x$ by division
 
-$sin(x) = 2 sin(x / 2) cos(x / 2)$ by division
+$- c (cos(theta) + 1) = Delta x$ by substitution
 
-$(2 sin(theta / 2) cos(theta / 2) l) / (cos(theta / 2) theta) = b$ by substitution
+$- (l / theta) (cos(theta) + 1) = Delta x$ by substitution
 
-$(2 sin(theta / 2)) (l / theta - Delta x_v) = b$ by division
-
-$sin(alpha) = "opposite" / "hypotenuse"$ by the definition of sine in right angle trigonometry
-
-$cos(alpha) = "adjacent" / "hypotenuse"$ by the definition of cosine in right angle trigonometry
-
-$sin(alpha) = (Delta y) / b$ and $cos(alpha) = (- Delta x) / b$ by substitution
-
-$b sin(alpha) = Delta y$ and $b cos(alpha) = - Delta x$ by multiplication
-
-$(2 sin(theta / 2)) (l / (theta) - Delta x_v) sin(alpha) = Delta y$ and $(2 sin(theta / 2)) (l / (theta) - Delta x_v) cos(alpha) = - Delta x$ by substitution
-
-$(2 sin(theta / 2)) (l / theta - Delta x_v) sin(pi / 2 - theta / 2) = Delta y$ and $(2 sin(theta / 2)) (l / theta - Delta x_v) cos(pi / 2 - theta / 2) = - Delta x$ by substitution
-
-$(2 sin(theta / 2)) (l / theta - Delta x_v) cos(theta / 2) = Delta y$ and $(2 sin(theta / 2)) (l / theta - Delta x_v) sin(theta / 2) = - Delta x$ by substitution
-
-$(2 sin(theta / 2) cos(theta / 2)) (l / theta - Delta x_v) = Delta y$ and $(2 sin(theta / 2) sin(theta / 2)) (l / theta - Delta x_v) = - Delta x$ by the associative property
-
-$sin(theta) (l / theta - Delta x_v) = Delta y$ and $(2 sin^2(theta / 2) (l / theta - Delta x_v) = - Delta x$ by substitution
-
-$- 2 sin^2(theta / 2) (l / theta - Delta x_v) = Delta x$ by division
-
-$sin^2(x) = (1 - cos(2 x))/2$ by the sine lowering power formula
-
-$- 2 ((1 - cos(theta)) / 2) (l / theta - Delta x_v) = Delta x$ by substitution
-
-$- ((1 - cos(theta)) (l / theta - Delta x_v) = Delta x$ by the associative property
-
-$(l / theta - Delta x_v) (-1 + cos(theta)) = Delta x$ by substitution
+$(l / theta) (cos(theta) + 1) = Delta x$ by the magnitude of $overline(B A)$
