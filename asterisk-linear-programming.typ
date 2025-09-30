@@ -4,6 +4,8 @@
 )
 ]
 
+Given
+
 $F_(r x m) = F_(m 2) + F_(m 3) - F_(m 1) - F_(m 4)$, $F_(r x o) = 0$
 
 $F_(r y m) = F_(m 1) + F_(m 2) + F_(m 3) + F_(m 4)$, $F_(r y o) = F_(o 1) + F_(o 2)$
@@ -132,3 +134,145 @@ and the vector
 $ b = vec(k_max, -k_min, 0, 0, tau_r, tau_r) $
 
 We can then put this into a simplex (or other algorithm) solver and it should output the correct answer!
+
+
+= Mecanum force maximization
+
+Let the decision vector be
+
+$$
+x := (F_m1, F_m2, F_m3, F_m4, F_o1, F_o2) \in R^6.
+$$
+
+Define the following row vectors (linear forms) acting on x:
+
+$$
+a_rx := (-1, 1, 1, -1, 0, 0),
+\qquad
+a_ry := (1, 1, 1, 1, 1, 1).
+$$
+
+$$
+a_ang := (1 + tan(theta_F), 1 - tan(theta_F), 1 - tan(theta_F),
+           1 + tan(theta_F), 1, 1)
+$$
+
+$$
+a_tau := (-(L + W)/4, (L + W)/4, -(L + W)/4, (L + W)/4, -W/2, W/2)
+$$
+
+Using these linear forms we may write the following equalities:
+
+$$
+F_rx = a_rx  x,  F_ry = a_ry  x,
+$$
+
+$$
+a_ang  x = F_ry - tan(theta_F)  F_rx,  tau = a_tau  x.
+$$
+
+Let k_min, k_max in R^6 denote elementwise box bounds:
+$$
+k_min <= x <= k_max.
+$$
+
+== Theorem
+
+Maximizing the Euclidean resultant force
+
+$$
+norm((F_rx, F_ry)) = sqrt(F_rx^2 + F_ry^2)
+$$
+
+subject to the angle equality a_ang  x = 0, a torque condition, and box bounds
+is equivalent to the convex second-order-cone program below.
+
+=== SOCP formulation (exact-angle, exact-torque)
+
+Maximize s over x in R^6 and s in R subject to the constraints
+
+$$
+sqrt( (a_rx  x)^2 + (a_ry  x)^2 ) <= s
+$$
+
+$$
+a_ang  x = 0
+$$
+
+$$
+a_tau  x = tau_r
+$$
+
+$$
+k_min <= x <= k_max
+$$
+
+If the torque is intended as a bound rather than an equality, replace the equality by
+
+$$
+abs(a_tau  x) <= tau_r
+$$
+
+i.e. the two linear inequalities
+
+$$
+a_tau  x <= tau_r  and  -a_tau  x <= tau_r.
+$$
+
+== Proof
+
+Step 1 (auxiliary scalar).
+Introduce s in R. Since the square-root is monotone increasing on [0, +infty),
+maximizing sqrt(F_rx^2 + F_ry^2) is equivalent to maximizing s subject to
+
+$$
+sqrt(F_rx^2 + F_ry^2) <= s.
+$$
+
+Step 2 (SOC cast).
+The inequality above is the second-order-cone constraint
+
+$$
+sqrt( (F_rx)^2 + (F_ry)^2 ) <= s,
+$$
+
+or, using the linear maps,
+
+$$
+sqrt( (a_rx  x)^2 + (a_ry  x)^2 ) <= s.
+$$
+
+Step 3 (linear constraints).
+The angle condition tan(theta_F) = F_ry / F_rx (when F_rx != 0) is algebraically equivalent to
+
+$$
+F_ry - tan(theta_F)  F_rx = 0,
+$$
+
+which is the linear equality a_ang  x = 0. The torque and box constraints are linear equalities/inequalities in x.
+
+Step 4 (convexity and equivalence).
+The objective s is linear. The SOC constraint and the linear equalities/inequalities are convex. The feasible set is convex, and the introduced scalar s enforces exact equivalence with maximizing the Euclidean norm. Hence the SOCP above is a correct exact convex reformulation.
+
+End of proof.
+
+== Remark (why the previous LP objective was incorrect)
+
+If one sets the LP objective vector c = (0, 2, 2, 0, 1, 1)^T then
+
+$$
+c^T x = 2 F_m2 + 2 F_m3 + F_o1 + F_o2.
+$$
+
+One checks
+
+$$
+F_rx + F_ry
+= (F_m2 + F_m3 - F_m1 - F_m4)
+  + (F_m1 + F_m2 + F_m3 + F_m4 + F_o1 + F_o2)
+= 2 F_m2 + 2 F_m3 + F_o1 + F_o2 = c^T x.
+$$
+
+However F_rx + F_ry is a linear functional and in general is not equal to sqrt(F_rx^2 + F_ry^2).
+Thus maximizing c^T x (an LP) optimizes the sum F_rx + F_ry, not the Euclidean magnitude.
+Use the SOCP above for the exact solution, or if you must remain with LPs use a polyhedral approximation.
