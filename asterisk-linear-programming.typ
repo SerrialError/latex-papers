@@ -6,13 +6,13 @@
 
 Given
 
-$v_(x m) = v_(m 2) + v_(m 3) - v_(m 1) - v_(m 4)$, $v_(x o) = 0$
+$v_(x m) = v_(m 1) + v_(m 4) - v_(m 2) - v_(m 3)$, $v_(x o) = 0$
 
 $v_(y m) = v_(m 1) + v_(m 2) + v_(m 3) + v_(m 4)$, $v_(y o) = v_(o 1) + v_(o 2)$
 
 $v_(x) = v_(x m)$, $v_(y) = v_(y m) + v_(y o)$, $tan(theta) = v_(y)/v_(x)$
 
-$ v_(x) = v_(m 2) + v_(m 3) - v_(m 1) - v_(m 4) $
+$ v_(x) = v_(m 1) + v_(m 4) - v_(m 2) - v_(m 3) $
 
 $ v_(y) = v_(m 1) + v_(m 2) + v_(m 3) + v_(m 4) + v_(o 1) + v_(o 2) $
 
@@ -84,7 +84,7 @@ $A = mat(
   -I^6 | 0_(6 times 6);
   -1_(12 times 6);
   1_(12 times 6);
-  -1_(12 times 1)
+  O^(6 times 6) | -1_(6 times 6)
 
 )$
 
