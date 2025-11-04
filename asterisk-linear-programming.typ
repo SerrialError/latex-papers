@@ -6,6 +6,20 @@
 
 Given
 
+Note: These are the correct formulas for velocity. Incorrectly throughout the proof I used velocity instead of force. Everything in the proof should be replaced with velocity. However as in this case force and velocity are proportional it doesn't change anything
+
+$ v_(x) = 1 / 4 (v_(m 1) + v_(m 4) - v_(m 2) - v_(m 3)) $
+
+$ v_(y) = 1 / 6 (v_(m 1) + v_(m 2) + v_(m 3) + v_(m 4) + v_(o 1) + v_(o 2)) $
+
+$ tan(theta) = v_(y) / v_(x) $
+
+$ omega = (L+W) / 24 (v_(m 2) + v_(m 4) - v_(m 1) - v_(m 3)) + W / 12 (v_(o 2)-v_(o 1)) $
+
+$ (L+W) / 24 (v_(m 2) + v_(m 4) - v_(m 1) - v_(m 3)) = W / 12 (v_(o 2)-v_(o 1)) $
+
+The incorrect velocities
+
 $v_(x m) = v_(m 1) + v_(m 4) - v_(m 2) - v_(m 3)$, $v_(x o) = 0$
 
 $v_(y m) = v_(m 1) + v_(m 2) + v_(m 3) + v_(m 4)$, $v_(y o) = v_(o 1) + v_(o 2)$
