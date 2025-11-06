@@ -92,7 +92,29 @@ Define a function $alpha$ by $alpha_("max") (omega) = (B omega + tau_("load") "s
 
 $qed$
 
-Find V voltage of wheel $n$ at some initial linear velocity $v$ and the wanted linear acceleration $a$ 
+Find $omega(t)$ given that the motor is constantly accelerating
+
+$alpha_("max") (omega) = (V_("max") - K_v omega - "sgn"(omega) K_s)/(K_a)$
+
+Let $s = "sgn"(omega) in {1, -1}$
+
+$(d omega) / (d t) = (V_("max") - K_v omega - s K_s)/(K_a)$
+
+$(d omega) / (d t) + K_v/K_a omega = (V_("max") - s K_s)/K_a$
+
+$I (t) = e^(integral K_v/K_a d t)$
+
+$I (t) = e^(K_v/K_a t)$
+
+$omega (t) = 1 / (I(t)) (integral_0^t I(tau) Q d tau + I(0) omega_0)$
+
+$omega (t) = 1 / (e^(K_v/K_a t)) (integral_0^t e^(K_v/K_a tau) (V_("max") - s K_s) / K_a d tau + omega_0)$
+
+$omega (t) = 1 / (e^(K_v/K_a t)) ((V_("max") - s K_s) / K_a K_a / K_v (e^(K_v/K_a tau) - 1) + omega_0)$
+
+$omega (t) = (V_("max") - s K_s) / K_v (e^(K_v/K_a tau) - 1) / (e^(K_v/K_a t)) + omega_0 (e^(-K_v/K_a t))$
+
+$omega (t) = (V_("max") - s K_s) / K_v + (omega_0 - (V_("max") - s K_s) / K_v) e^(-K_v/K_a t)$
 
 $qed$
 
