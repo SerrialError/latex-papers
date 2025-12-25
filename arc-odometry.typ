@@ -1,86 +1,65 @@
-#import "@preview/cetz:0.4.1"
+#align(center)[
+  #figure(
+  image("arc-odometry-construction.png", width: 100%),
+)
+]
 
-#let r = 10
-#let h = r * (calc.sin(50deg))/(calc.sin(65deg))
-#let x = r - h*(calc.cos(65deg))
-#let y = h*(calc.sin(65deg))
-#cetz.canvas({
-  import cetz.draw: *
+Given the measures of $l_l$, $theta_(r 0)$, and $theta_(r 1)$, the directed distance of $x_r$, $y_r$, $x_(t l)$, $y_(t l)$, $x_(t h)$, and $y_(t h)$, and $arrow(P_(t l 1) C_(t l 1))$ and $arrow(P_(t l 0) C_(t l 0))$ are $perp$ to the tangent lines at the at points $C_(t l 1)$ and $C_(t l 0)$ on $arrow(overparen(C_(t r 0) C_(t r 1)))$; find the directed distance of $Delta x_r$ and $Delta y_r$
 
-  arc((r,0), start: 0deg, stop: 50deg, radius: r, mode: "PIE", name: "myarc")
-  content((0.5,0.2), $ theta $)
-  content((-.2,-0.2), $B$)
-  content((9.5,0.3), $ alpha $)
-  content((10.2,-0.2), $A$)
-  content((6.4,7.9), $C$)
-  line((r,0),(x, y))
-  line((x, y),(x,0))
-  content((7.5,-0.2), $ Delta x $)
-  content((6.4,-0.2), $ M $)
-  content((6,4), $ Delta y $)
-  content((9,5), $ l $)
-  rect((7, -3),(13, 3))
-  line((8.5,-.5),(8.5,.5))
-})
+The measures of $l_l$, $theta_(r 0)$, and $theta_(r 1)$ and the directed distance of $x_r$, $y_r$, $x_(t l)$, $y_(t l)$, $x_(t h)$, and $y_(t h)$ because they are given
 
-Given the measures of $l$ and $theta$; AC is an arc; find $Delta x$ and $Delta y$
+Let $phi_0$ be the angle $overline(B_r C_(t l 0))$ makes with the x-axis
 
-The measures of $l$ and $theta$ and AC is an arc because they are given
+Let $phi_1$ be the angle $overline(B_r C_(t l 1))$ makes with the x-axis
 
-$c$ is a radius by the definition of a radius
+$Delta theta_r + phi_0 = phi_1$ by the $angle$ add. post.
 
-$c tilde.equiv r$ by the reflexive property
+$theta_(r 1) = phi_1 + pi / 2$ and $theta_(r 0) = phi_0 + pi / 2$ by the tangent radius theorem
 
-$c = r$ by the definition of $tilde.equiv$ segments
+$Delta theta_r = phi_1 - phi_0$, $phi_1 = theta_(r 1) - pi / 2$, and $phi_0 = theta_(r 0) - pi / 2$ by subtraction
 
-$l = r theta$ by the arc length formula in radians
+$Delta theta_r = theta_(r 1) - pi / 2 - (theta_(r 0) - pi / 2)$ by substitution
 
-$l = c theta$ by substitution
+$Delta theta_r = theta_(r 1) - pi / 2 - theta_(r 0) + pi / 2$ by multiplication
 
-$l / theta = c$ by division
+$Delta theta_r = theta_(r 1) - theta_(r 0)$ by substitution
 
-$sin(theta) = "opposite" / "hypotenuse"$ by the definition of sine in right angle trigonometry
+$r_l = r_r + x_(t l)$ by the segment addition postulate
 
-$cos(theta) = "adjacent" / "hypotenuse"$ by the definition of cosine in right angle trigonometry
+$r_r = r_l - x_(t l)$ by subtraction
 
-$overline(A B) tilde.equiv c$ because radii $tilde.equiv$
+$l_r = r_r Delta theta_r$ by the arc length formula
 
-$Delta x tilde.equiv overline(M A)$ by the reflexive property
+$l_r / (Delta theta_r) = r_r$ by division
 
-$A B = c$ and $M A = Delta x$ by the definition of $tilde.equiv$ segments
+$M_l A = Delta x_l$ by the definition of $tilde.equiv$ line segments
 
-$A B = B M + M A$ by the sement addition postulate
+$A B_l = B_l M_l + M_l A$ by the sement addition postulate
 
-$A B - M A = B M$ by subtraction
+$A B_l - M_l A = B_l M_l$ by subtraction
 
-$c - Delta x = B M$ by substitution
+$A B_l - Delta x_l = B_l M_l$ by substitution
 
-$l / theta - Delta x = B M$ by substitution
+$l_l / theta_l - Delta x_l = B_l M_l$ by substitution
 
-$Delta y$ is an opposite side to $angle theta$ by the definition of an opposite side.
+$Delta y_l$ is an opposite side to $angle theta_l$ by the definition of an opposite side
 
-$overline(B M)$ is an adjacent side to $angle theta$ by the definition of an adjacent side
+$overline(A B_l)$ is an adjacent side to $angle theta_l$ by the definition of an adjacent side
 
-$c$ is the hypotenuse of $triangle.stroked.t B M C$ by as the side opposite to the right $angle$ of a $triangle.stroked.t$ is the hypotenuse
+$overline(A B_l)$ is the hypotenuse of $triangle.stroked.t B M C$ by as the side opposite to the right $angle$ of a $triangle.stroked.t$ is the hypotenuse
 
-$Delta y tilde.equiv Delta y$, $overline(B M) tilde.equiv overline(B M)$, and $c tilde.equiv c$ by the reflexive property
+$sin(theta_l) = (Delta y_l) / (A_l B_l)$, $cos(theta_l) = (B_l M_l) / (A B_l)$ by the definition of sine and cosine in right angle trigonometry
 
-$Delta y = Delta y$, $B M = B M$, and $c = c$ by the definition of congurent segments
+$sin(theta_l) = (Delta y_l) / (l_l / theta)$, $cos(theta_l) = (A B_l - Delta x_l) / A B_l$ by substitution
 
-$Delta y = "opposite"$, $B M = "adjacent"$, and $c = "hypotenuse"$ by substitution
+$(l_l / theta_l) sin(theta_l) = Delta y_l$, $A B_l cos(theta_l) = A B_l - Delta x_l$ by multiplication
 
-$sin(theta) = (Delta y) / c$, $cos(theta) = (B M) / c$ by substitution
+$A B_l cos(theta_l) - A B_l = - Delta x_l$ by substraction
 
-$sin(theta) = (Delta y) / (l / theta)$, $cos(theta) = (c - Delta x) / c$ by substitution
+$- A B_l cos(theta_l) + A B_l = Delta x_l$ by division
 
-$(l / theta) sin(theta) = Delta y$, $c cos(theta) = c - Delta x$ by multiplication
+$- A B_l (cos(theta_l) + 1) = Delta x_l$ by substitution
 
-$c cos(theta) - c = - Delta x$ by substraction
+$- (l_l / theta_l) (cos(theta_l) + 1) = Delta x_l$ by substitution
 
-$- c cos(theta) + c = Delta x$ by division
-
-$- c (cos(theta) + 1) = Delta x$ by substitution
-
-$- (l / theta) (cos(theta) + 1) = Delta x$ by substitution
-
-$(l / theta) (cos(theta) + 1) = Delta x$ by the magnitude of $overline(B A)$
+$(l_l / theta_l) (cos(theta_l) + 1) = Delta x_l$ by the magnitude of $overline(B_l A)$
