@@ -118,6 +118,40 @@ $omega (t) = (V_("max") - s K_s) / K_v + (omega_0 - (V_("max") - s K_s) / K_v) e
 
 $qed$
 
-Find the maximum $alpha$ angular acceleration of wheel $n$ at some linear velocity $v$
+Find a State-Space model in the form
+
+$accent(x, dot) = A x + B u$
+
+$y = C x + D u$
+
+$V = K_a alpha + K_v omega + K_s "sign"(omega)$ because it is given
+
+Let $u = V$ and $x = vec(omega, "sign"(omega))$
+
+$alpha = accent(omega, dot)$ by the definition of acceleration
+
+$accent(x, dot) mat(1, 0) = accent(omega, dot)$ by the derivative
+
+$alpha = accent(x, dot) mat(1, 0)$ by substitution
+
+$"sign"(omega) = x mat(0, 1)$
+
+$u = K_a alpha + K_v omega + K_s "sign"(omega)$ by substitution
+
+$K_v omega + K_s "sign"(omega) = - K_a alpha + u$ by subtraction
+
+$K_v x mat(1, 0) + K_s x mat(0, 1) = - K_a accent(x, dot) mat(1, 0) + u$ by substitution
+
+$x (K_v mat(1, 0) + K_s mat(0, 1)) = - K_a accent(x, dot) mat(1, 0) + u$ by substitution
+
+$x mat(K_v, K_s) = - K_a accent(x, dot) mat(1, 0) + u$ by substitution
+
+$x = mat(K_v,K_s)^+ (- K_a accent(x, dot) mat(1, 0) + u)$ by multiplication
+
+$x = vec(K_v, K_s)/(K_v^2+K_s^2) (- K_a accent(x, dot) mat(1, 0) + u)$ by the psuedoinverse
+
+$x = - K_a / (K_v^2+K_s^2) mat(K_v, 0; K_s, 0) accent(x, dot) + 1 / (K_v^2+K_s^2) vec(K_v, K_s) u$ by substitution
+
+$x = mat((- K_a K_v) / (K_v^2+K_s^2), 0; (- K_a K_s) / (K_v^2+K_s^2), 0) accent(x, dot) + vec((- K_a K_v) / (K_v^2+K_s^2), (- K_a K_s) / (K_v^2+K_s^2)) u$ by substitution
 
 $qed$
