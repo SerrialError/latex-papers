@@ -148,4 +148,12 @@ $accent(x, dot) = vec(1, 0) mat(-K_v/K_a, -K_s/K_a) x + vec(1,0) 1/K_a u$ by mul
 
 $accent(x, dot) = mat(-K_v/K_a, -K_s/K_a; 0, 0) x + vec(1/K_a,0) u$ by substitution
 
+Let $bold(A) = mat(-K_v/K_a, -K_s/K_a; 0, 0)$ and $bold(B) = vec(1/K_a,0)$
+
+Let $y = vec(omega)$
+
+$y = x mat(1, 0)$ by substitution
+
+Let $bold(C) = mat(1, 0)$ and $bold(D) = 0$
+
 $qed$
