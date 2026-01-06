@@ -118,7 +118,7 @@ $omega (t) = (V_("max") - s K_s) / K_v + (omega_0 - (V_("max") - s K_s) / K_v) e
 
 $qed$
 
-find a state-space model in the form
+Find a continuous state-space model in the form
 
 $accent(x, dot) = bold(A) x + bold(B) u$
 
@@ -157,3 +157,61 @@ $y = x mat(1, 0)$ by substitution
 Let $bold(C) = mat(1, 0)$ and $bold(D) = 0$
 
 $qed$
+
+Given
+
+$bold(A)_d = e^(bold(A)_c T)$
+
+$bold(B)_d = integral_0^T e^(bold(A_c) tau) d tau bold(B)_c$
+
+$bold(C)_d = bold(C)_c$
+
+$bold(D)_d = bold(D)_c$
+
+$bold(A_c) = mat(-K_v/K_a, -K_s/K_a; 0, 0)$
+
+$bold(B_c) = vec(1/K_a,0)$
+
+$bold(C_c) = mat(1, 0)$
+
+$bold(D_c) = 0$
+
+Find a discrete state-space model in the form
+
+$x_(k + 1) = bold(A) x_k + bold(B) u_k$
+
+$y_k = bold(C) x_k + bold(D) u_k$
+
+$bold(A)_d = e^(mat(-K_v/K_a, -K_s/K_a; 0, 0) T)$ by substitution
+
+$bold(A)_d = e^mat(-T K_v/K_a, -T K_s/K_a; 0, 0)$ by substitution
+
+Let $a = -T K_v/K_a$ and $b = -T K_s/K_a$
+
+$bold(A)_d = e^mat(a, b; 0, 0)$ by substitution
+
+$bold(A)_d = mat(e^a, b (e^a-e^0)/(a-0); 0, e^0)$ by the exponential of an upper-triangular matrix formula
+
+$bold(A)_d = mat(e^(-T K_v/K_a), -T K_s/K_a (e^(-T K_v/K_a)-1)/(-T K_v/K_a); 0, 1)$ by substitution
+
+$bold(A)_d = mat(e^(-T K_v/K_a), K_s (e^(-T K_v/K_a)-1)/K_v; 0, 1)$ by substitution
+
+$bold(B)_d = integral_0^T mat(e^(-tau K_v/K_a), K_s (e^(-tau K_v/K_a)-1)/K_v; 0, 1) vec(1/K_a,0) d tau$ by substitution
+
+$bold(B)_d = integral_0^T vec(e^(-tau K_v/K_a)/K_v,0) d tau$ by substitution
+
+$bold(B)_d =  vec(1/K_a integral_0^T e^(-tau K_v/K_a) d tau,0)$ by substitution
+
+Let $I_d = integral_0^T e^(-tau K_v/K_a) d tau$
+
+$bold(B)_d =  vec(I_d/K_v, 0)$ by substitution
+
+$I_d = e^(-0 K_v/K_a) - e^(-T K_v/K_a)$ by FTC
+
+$I_d = 1 - e^(-T K_v/K_a)$ by substitution
+
+$bold(B)_d =  vec((1 - e^(-T K_v/K_a))/K_v, 0)$ by substitution
+
+$bold(C)_d = mat(1, 0)$ by substitution
+
+$bold(D)_d = 0$ by substitution
