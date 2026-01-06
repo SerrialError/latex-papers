@@ -118,15 +118,15 @@ $omega (t) = (V_("max") - s K_s) / K_v + (omega_0 - (V_("max") - s K_s) / K_v) e
 
 $qed$
 
-Find a State-Space model in the form
+find a state-space model in the form
 
-$accent(x, dot) = A x + B u$
+$accent(x, dot) = bold(A) x + bold(B) u$
 
-$y = C x + D u$
+$y = bold(C) x + bold(D) u$
 
-$V = K_a alpha + K_v omega + K_s "sign"(omega)$ because it is given
+$v = K_a alpha + K_v omega + K_s "sign"(omega)$ because it is given
 
-Let $u = V$ and $x = vec(omega, "sign"(omega))$
+let $u = v$ and $x = vec(omega, "sign"(omega))$
 
 $alpha = accent(omega, dot)$ by the definition of acceleration
 
@@ -138,20 +138,14 @@ $"sign"(omega) = x mat(0, 1)$
 
 $u = K_a alpha + K_v omega + K_s "sign"(omega)$ by substitution
 
-$K_v omega + K_s "sign"(omega) = - K_a alpha + u$ by subtraction
+$K_a accent(x, dot) mat(1, 0) = u - K_v x mat(1, 0) - K_s x mat(0, 1)$ by subtraction
 
-$K_v x mat(1, 0) + K_s x mat(0, 1) = - K_a accent(x, dot) mat(1, 0) + u$ by substitution
+$K_a accent(x, dot) mat(1, 0) = mat(-K_v, -K_s) x + u$ by substitution
 
-$x (K_v mat(1, 0) + K_s mat(0, 1)) = - K_a accent(x, dot) mat(1, 0) + u$ by substitution
+$accent(x, dot) mat(1, 0) = mat(-K_v/K_a, -K_s/K_a) x + 1/K_a u$ by division
 
-$x mat(K_v, K_s) = - K_a accent(x, dot) mat(1, 0) + u$ by substitution
+$accent(x, dot) = vec(1, 0) mat(-K_v/K_a, -K_s/K_a) x + vec(1,0) 1/K_a u$ by multiplication
 
-$x = mat(K_v,K_s)^+ (- K_a accent(x, dot) mat(1, 0) + u)$ by multiplication
-
-$x = vec(K_v, K_s)/(K_v^2+K_s^2) (- K_a accent(x, dot) mat(1, 0) + u)$ by the psuedoinverse
-
-$x = - K_a / (K_v^2+K_s^2) mat(K_v, 0; K_s, 0) accent(x, dot) + 1 / (K_v^2+K_s^2) vec(K_v, K_s) u$ by substitution
-
-$x = mat((- K_a K_v) / (K_v^2+K_s^2), 0; (- K_a K_s) / (K_v^2+K_s^2), 0) accent(x, dot) + vec((- K_a K_v) / (K_v^2+K_s^2), (- K_a K_s) / (K_v^2+K_s^2)) u$ by substitution
+$accent(x, dot) = mat(-K_v/K_a, -K_s/K_a; 0, 0) x + vec(1/K_a,0) u$ by substitution
 
 $qed$
