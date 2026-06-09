@@ -215,3 +215,36 @@ $bold(B)_d =  vec((1 - e^(-T K_v/K_a))/K_v, 0)$ by substitution
 $bold(C)_d = mat(1, 0)$ by substitution
 
 $bold(D)_d = 0$ by substitution
+
+$qed$
+
+Given
+
+$u^*_k = "arg" "min"_u_k Sigma$ // write out LQR
+
+Find $K$ based on $bold(Q)$ and $bold(R)$ in LQR
+
+$bold(A)^T bold(S) bold(A) - bold(S) - bold(A)^T bold(S) bold(B)(bold(R) + bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A) + Q = 0$ by the discrete algebraic Riccati equation
+
+$K = (bold(R)+bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A)$ by the discrete LQR result solved by the discrete algebraic Riccati equation
+
+
+
+
+
+
+$bold(A)^T bold(S) bold(A) - bold(S) - bold(A)^T bold(S) bold(B)(bold(R) + bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A) + Q = 0$
+
+$K = (bold(R)+bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A)$
+
+$bold(A) = mat(e^(-T K_v/K_a), K_s (e^(-T K_v/K_a)-1)/K_v; 0, 1)$
+
+$bold(B) = vec((1 - e^(-T K_v/K_a))/K_v, 0)$
+
+$bold(C) = mat(1, 0)$
+
+$bold(D) = 0$ by substitution
+
+
+
+

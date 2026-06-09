@@ -153,3 +153,122 @@ $b_("new") = b_(1:10)$
 $c_("new") = vec(forall x: cos(theta_("des")) A_("new")_x + sin(theta_("des")) A_("new")_y)$
 
 This then outputs the optimized vector $x^*_("new")$ we then plug in that vector into $v_x$ and $v_y$ to get $v_r$
+
+
+#align(center)[
+  #figure(
+    image("asterisk-mecanum-diagram.png", width: 60%),
+  )
+]
+
+Given
+
+Let
+
+$ x = vec(m_1, m_2, m_3, m_4, o_1, o_2) $
+
+and define the chassis velocity map by
+
+$ v_x = 1 / 4 (m_1 + m_4 - m_2 - m_3) $
+
+$ v_y = 1 / 6 (m_1 + m_2 + m_3 + m_4 + o_1 + o_2) $
+
+$ omega = (L + W) / 24 (m_2 + m_4 - m_1 - m_3) + W / 12 (o_2 - o_1) $
+
+so that
+
+$ vec(v_x, v_y, omega) = A x $
+
+where
+
+$ A = mat(
+  1/4,  -1/4, -1/4,  1/4,   0,    0;
+  1/6,   1/6,  1/6,  1/6,  1/6,  1/6;
+  -(L+W)/24, (L+W)/24, -(L+W)/24, (L+W)/24, -W/12, W/12
+) $
+
+Let $theta_("des")$ be the desired travel direction and let $omega_("des")$ be the desired angular velocity.
+
+To force motion in the desired direction, write
+
+$ v_x = r cos(theta_("des")) $
+
+$ v_y = r sin(theta_("des")) $
+
+for some $r gt.eq 0$.
+
+Then maximizing translational speed is equivalent to maximizing $r$, since
+
+$ r = sqrt(v_x^2 + v_y^2) $
+
+Hence the speed-maximization problem is
+
+$ max r $
+
+subject to
+
+$ A x = vec(r cos(theta_("des")), r sin(theta_("des")), omega_("des")) $
+
+and
+
+$ x_i^(min) lt.eq x_i lt.eq x_i^(max) $
+
+for all $i in {1,2,3,4,5,6}$.
+
+This is a linear program, because both the objective and all constraints are linear in the decision variables $x$ and $r$.
+
+Proof
+
+Now suppose instead that we want the wheel-speed vector to stay as close as possible to a nominal vector
+
+$ x_("nom") = vec(m_(1,"nom"), m_(2,"nom"), m_(3,"nom"), m_(4,"nom"), o_(1,"nom"), o_(2,"nom")) $
+
+Define auxiliary variables $d_i$ by
+
+$ d_i gt.eq x_i - x_(i,"nom") $
+
+$ d_i gt.eq -(x_i - x_(i,"nom")) $
+
+$ d_i gt.eq 0 $
+
+Then $d_i gt.eq |x_i - x_(i,"nom")|$ for each $i$.
+
+Therefore minimizing
+
+$ sum_(i=1)^6 d_i $
+
+is equivalent to minimizing the total absolute deviation
+
+$ sum_(i=1)^6 |x_i - x_(i,"nom")| $
+
+with the same feasibility constraints as above.
+
+So the full linear program is
+
+$ min sum_(i=1)^6 d_i $
+
+subject to
+
+$ A x = vec(r cos(theta_("des")), r sin(theta_("des")), omega_("des")) $
+
+$ x_i^(min) lt.eq x_i lt.eq x_i^(max) $
+
+$ d_i gt.eq x_i - x_(i,"nom") $
+
+$ d_i gt.eq -(x_i - x_(i,"nom")) $
+
+$ d_i gt.eq 0 $
+
+for all $i in {1,2,3,4,5,6}$.
+
+At an optimum, each $d_i$ is forced down to the smallest feasible value, so $d_i = |x_i - x_(i,"nom")|$. Thus the objective really is the total absolute deviation from the nominal wheel speeds.
+
+Finally, after solving for $x^*$, the optimized chassis velocity is
+
+$ vec(v_x^*, v_y^*, omega^*) = A x^* $
+
+and the translational speed is
+
+$ v_r^* = sqrt((v_x^*)^2 + (v_y^*)^2) = r^* $
+
+$qed$
