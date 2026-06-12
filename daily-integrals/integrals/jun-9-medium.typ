@@ -1,75 +1,39 @@
-$integral^(pi / 4)_0 32 (2 - sec^2 x) / (sec^2 x + 4 sin^2 x) log_2(sin x + cos x) d x$
+$integral^sqrt(2)_0 [3/2 cos^(-1)(sqrt(2 / (2 + x^2))) + 1/4 sin^(-1)((2 sqrt(2) x) / (2 + x^2)) + tan^(-1)(sqrt(2)/x)] d x$
 
-$32 integral^(pi / 4)_0 (2 sec^2 x - 2 tan^2 x - sec^2 x) / (sec^2 x + 4 sin^2 x) (ln (sin x + cos x)) / (ln 2) d x$
+$x := tan t sqrt(2)$
 
-$32 / (ln 2) integral^(pi / 4)_0 (sec^2 x - 2 tan^2 x) / (sec^2 x + 4 sin^2 x) ln (sin x + cos x) d x$
+$d x = sec^2 t sqrt(2) d t$
 
-$32 / (ln 2) integral^(pi / 4)_0 (1 - 2 sin^2 x) / (4 sin^2 x cos^2 x + 1) ln (sin x + cos x) d x$
+$sqrt(2) integral^(pi/4)_0 [3/2 cos^(-1)(sqrt(2 / (2 + (tan t sqrt(2))^2))) + 1/4 sin^(-1)((2 sqrt(2) (tan t sqrt(2))) / (2 + (tan t sqrt(2))^2)) + tan^(-1)(sqrt(2)/(tan t sqrt(2)))] sec^2 t d t$
 
-$32 / (ln 2) integral^(pi / 4)_0 (cos 2 x) / (1 + sin^2 2 x) ln (sin x + cos x) d x$
+$sqrt(2) integral^(pi/4)_0 [3/2 t + 1/4 sin^(-1)((2 tan t) / (sec^2 t)) + tan^(-1)(tan(pi/2 - t))] sec^2 t d t$
 
-$(sin x + cos x)^2 = sin^2 x + 2 sin x cos x + cos^2 x = 1 + sin 2 x$
+$sqrt(2) integral^(pi/4)_0 [3/2 t + 1/4 sin^(-1)((2 sin t cos^2 t) / (cos t))+ pi/2 - t] sec^2 t d t$
 
-$sin x + cos x = plus.minus sqrt(1 + sin 2 x)$
+$sqrt(2) integral^(pi/4)_0 [1/2 t + pi/2 + 1/4 sin^(-1)(2 sin t cos t)] sec^2 t d t$
 
-$sin x + cos x gt.eq 0 "st." x in [0, pi / 4]$
+$sqrt(2) integral^(pi/4)_0 [1/2 t + pi/2 + 1/4 sin^(-1)(sin (2 t))] sec^2 t d t$
 
-$therefore sin x + cos x := sqrt(1 + sin 2 x)$
+$sqrt(2) integral^(pi/4)_0 (1/2 t + pi/2 + 1/2 t) sec^2 t d t$
 
-$16 / (ln 2) integral^(pi / 4)_0 (cos 2 x) / (1 + sin^2 2 x) ln (1 + sin 2 x) d x$
+$sqrt(2) (integral^(pi/4)_0 t sec^2 t d t + pi/2 integral^(pi/4)_0 sec^2 t d t)$
 
-$u := sin 2x$
+$u := t$ $d v := sec^2 t$
 
-$d u = 2 cos 2 x$
+$d u = d t$ $v = tan t$
 
-$8 / (ln 2) integral^(1)_0 (ln (1 + u)) / (1 + u^2) d u$
+$sqrt(2) (t tan t |^(pi/4)_0 - integral^(pi/4)_0 tan t d t + pi/2 tan t |^(pi/4)_0)$
 
-$u := tan t$
+$sqrt(2) (pi/4 - integral^(pi/4)_0 (sin t) / (cos t) d t + pi/2)$
 
-$d u = sec^2 t d t$
+$w := cos t$
 
-$8 / (ln 2) integral^(pi / 4)_0 (ln (1 + tan t)) / (1 + tan^2 t) sec^2 d t$
+$d w := -sin t d t$
 
-$8 / (ln 2) integral^(pi / 4)_0 ln (1 + tan t) d t$
+$sqrt(2) ((3pi)/4 + integral^(sqrt(2)/2)_1 1 / w d w)$
 
-$8 / (ln 2) integral^(pi / 4)_0 ln ((cos t + sin t)/ (cos t)) d t$
+$sqrt(2) ((3pi)/4 + ln|w| |^(sqrt(2)/2)_1)$
 
-$8 / (ln 2) (integral^(pi / 4)_0 ln (cos t + sin t) d t - integral^(pi / 4)_0 ln (cos t) d t)$
+$sqrt(2) ((3pi)/4 - 1/2 ln 2)$
 
-$sin(alpha + beta) = cos alpha sin beta + sin alpha cos beta$
-
-$beta := pi / 4$
-
-$sin(alpha + pi / 4) = cos alpha sqrt(2) / 2 + sin alpha sqrt(2) / 2$
-
-$cos alpha + sin alpha = sqrt(2) sin(alpha + pi /4)$
-
-$8 / (ln 2) (integral^(pi / 4)_0 ln (sqrt(2) sin(t + pi/4)) d t - integral^(pi / 4)_0 ln (cos t) d t)$
-
-$8 / (ln 2) (integral^(pi / 4)_0 ln (sin(t + pi/4)) d t + 1 / 2 integral^(pi / 4)_0 ln 2 d t - integral^(pi / 4)_0 ln (cos t) d t)$
-
-$w := t + pi/4$
-
-$d w = d t$
-
-$8 / (ln 2) (integral^(pi / 2)_(pi / 4) ln (sin w) d w + ln 2 / 2 t |^(pi / 4)_0 - integral^(pi / 4)_0 ln (cos t) d t)$
-
-$A := integral^(pi / 2)_(pi / 4) ln (sin w) d w$
-
-$B := integral^(pi / 4)_0 ln (cos t) d t$
-
-$y := pi / 2 - t$
-
-$d y = -d t$
-
-$B = integral^(pi / 2)_(pi / 4) ln (cos (pi / 2 - y)) d y$
-
-$B = integral^(pi / 2)_(pi / 4) ln (sin y) d y$
-
-$therefore A = B and A - B = 0$
-
-$8 / (ln 2) (A - B + (ln 2) / 2 pi / 4)$
-
-$8 / (ln 2) (ln 2) / 8 pi$
-
-$pi$
+$(3 pi sqrt(2)) / 4 - (sqrt(2)) / 2 ln 2$

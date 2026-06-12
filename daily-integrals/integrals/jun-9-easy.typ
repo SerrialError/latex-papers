@@ -1,25 +1,19 @@
-$integral_(pi/4)^(pi/2) ln(tan x) / (tan x)-ln(sec x )/(tan x) d x$
+$integral^256_0 1 / (8(sqrt(sqrt(sqrt(x)+9)-3))(sqrt(sqrt(x)+9))(sqrt(2 x))) d x$
 
-$integral_(pi/4)^(pi/2) (ln((sin x) / (cos x))-ln(1 / (cos x))) / (tan x) d x$
+$1 / (8 sqrt(2)) integral^256_0 1 / (sqrt(sqrt(sqrt(x)+9)-3) sqrt(sqrt(x)+9) sqrt(x)) d x$
 
-$integral_(pi/4)^(pi/2) ln((sin x) / (cos x) / (1 / (cos x))) / (tan x) d x$
+$u := sqrt(sqrt(x)+9)$
 
-$integral_(pi/4)^(pi/2) (cos x ln(sin x)) / (sin x) d x$
+$d u := 1 / (4 sqrt(sqrt(x)+9) sqrt(x)) d x$
 
-$u := sin x$
+$1 / (2 sqrt(2)) integral^5_3 1 / sqrt(u-3) d u$
 
-$d u = cos x d x$
+$w := u - 3$
 
-$integral_(1 / sqrt(2))^(1) (ln u) / u d u$
+$d w := d u$
 
-$t := ln u$
+$1 / (2 sqrt(2)) integral^2_0 w^(-1 / 2) d w$
 
-$d t = 1 / u d u$
+$w^(1 / 2) / sqrt(2) |^2_0$
 
-$integral_(-(ln 2) / 2)^(0) t d t$
-
-$t^2 / 2 |_(-(ln 2) / 2)^(0)$
-
-$- (-(ln 2) / 2)^2 / 2$
-
-$- (ln^2 2) / 8$
+$1$
