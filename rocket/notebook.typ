@@ -1,5 +1,5 @@
 // ============================================================
-// VTVL HOPPER ENGINE - REQUIREMENTS AND PROPELLANT SELECTION
+// VTVL HOPPER ENGINE
 // Preliminary non-cryogenic pressure-fed liquid engine study
 // ============================================================
 #set page(
@@ -104,7 +104,7 @@
 
 == Mission Objective
 
-Design a throttleable, pressure-fed liquid bipropellant engine for a minimal VTVL hopper. The vehicle exists to support the engine, tanks, avionics, plumbing, landing gear, and test instrumentation. There is no payload requirement and no altitude requirement at this stage. The first flight objective is controlled liftoff, hover or near-hover control authority, and safe landing.
+Design a throttleable, simple liquid bipropellant engine (and every subsystem required for it to work) for a minimal VTVL hopper. The engine exists to support a possible vehicle in the future inculding subsystems such as avionics, landing gear, and test instrumentation. The theoretical flight objective for the full vehicle to be designed later is controlled liftoff, hover or near-hover control authority, and safe landing.
 
 == Requirement Classification
 
@@ -118,12 +118,12 @@ The requirements below are limited to items that must be true before the design 
       align: (left, center, left),
       inset: 5pt,
       [*Item*], [*Classification*], [*Requirement / design rule*],
-      [Budget], [Hard], [Prototype propulsion hardware target: ≤ \$5,000 excluding propellant, shop tooling, and instrumentation already owned.],
-      [Architecture], [Hard], [Pressure-fed liquid bipropellant. No turbopumps.],
-      [Cryogenics], [Hard], [No cryogenic propellant storage for the first prototype.],
-      [Hazard class], [Hard], [No hydrazine-family fuels, NTO, RFNA, or similarly high-toxicity/high-corrosion propellants for this build.],
+      [Budget], [Hard], [Prototype propulsion hardware target: ≤ \$5,000 excluding propellant],
+      [Architecture], [Hard], [No turbopumps.],
+      [Cryogenics], [Hard], [No cryogenic propellant storage.],
+      [Hazard class and Legality], [Hard], [Nothing specifically potentially hazardous, corrosive, toxic, or illegal.],
       [Material access], [Hard], [Primary wetted structural materials shall be readily obtainable aluminum alloy or stainless steel unless a later section gives a specific compatibility basis.],
-      [Fluid connectors], [Hard], [Use pressure-rated commercial connector families only: AN/MS, CGA, Swagelok-compatible compression fittings, or equivalent documented hardware. No custom fluid connector geometry.],
+      [Fluid connectors], [Hard], [Use pressure-rated commercial connector families only: AN/MS, CGA, Swagelok-compatible compression fittings, or equivalent documented hardware.],
       [Pressure safety], [Hard], [Pressure-wetted custom parts shall use burst factor of safety $gt.eq 4$ against MEOP. Purchased cylinders, valves, regulators, and fittings shall be used only within documented manufacturer ratings.],
       [Remote operation], [Hard], [All oxidizer and hot-fire operations shall be controllable from a safe remote location with positive propellant isolation before personnel approach.],
       [Throttle demonstration], [Test requirement], [The engine shall demonstrate repeatable operation at full thrust and at lower commanded setpoints before flight. The final throttle ratio is set after vehicle mass is known.],
@@ -144,40 +144,15 @@ The requirements below are limited to items that must be true before the design 
       align: (left, center, left),
       inset: 5pt,
       [*Quantity*], [*Status*], [*How it is used in this notebook*],
-      [Specific impulse], [Analysis output], [Report $I_"sp,SL"$, $I_"sp,vac"$, $P_c$, $P_"amb"$, $P_e$, $epsilon$, O/F, and chemistry mode for every CEA/RocketCEA value. No hard $I_"sp"$ floor is set in the requirements section.],
       [Nominal thrust], [Sizing variable], [Preliminary analyses may bracket 200-400 N, but the final value belongs in the engine sizing section after dry mass and propellant mass converge.],
       [Full-thrust liftoff margin], [Derived later], [After $m_0$ is known, require $T_"max" / (m_0 g_0) gt.eq 1.2$ minimum. Higher margin is useful only if it does not force unnecessary system scale-up.],
       [Minimum throttle], [Derived later], [After $m_0$ is known, require $T_"min" < m_0 g_0$ so the vehicle can command descent.],
       [Burn duration], [Design goal], [30 s minimum useful demonstration; 60 s stretch target. Propellant mass is computed after thrust and $I_"sp,SL"$ are selected.],
       [Chamber pressure], [Design variable], [Use 150 psia as the first static-fire analysis point and carry 200 psia as a performance-upgrade case if feed, cooling, and structure close.],
-      [Engine dry mass], [Design goal], [Engine assembly target $lt.eq 2.5 "kg"$ for chamber, nozzle, injector, and cooling jacket.],
     )
   ),
   caption: [Sizing variables intentionally deferred to later notebook sections.],
 ) <tbl-sizing-vars>
-
-== Chamber Pressure Design Basis
-
-The baseline chamber-pressure range is $P_c = 150-200 "psia"$. A lower chamber pressure reduces chamber stress, heat flux, valve pressure rating, injector pressure drop, and early test-stand load. A higher chamber pressure improves nozzle pressure ratio and sea-level impulse. For this hopper, the first static-fire baseline is $P_c = 150 "psia"$; $P_c = 200 "psia"$ is retained as a later upgrade point, not assumed from the start.
-
-The generated RocketCEA pressure sweep in #link("rocket_outputs/data/pressure_sweep_summary.csv")[rocket_outputs/data/pressure_sweep_summary.csv] gives the following sea-level-optimized performance trend @cea_hopper_runs_2026. Each row re-optimizes O/F and $epsilon$ so that $P_e approx P_"amb"$ at $P_"amb" = 14.7 "psia"$.
-
-#figure(
-  compact-table(
-    table(
-      columns: (1.45fr, 1fr, 1fr, 1fr),
-      fill: tfill,
-      align: (left, center, center, center),
-      inset: 5pt,
-      [*Propellant*], [*$I_"sp,SL"$ at 150 psia*], [*$I_"sp,SL"$ at 200 psia*], [*Gain*],
-      [N₂O / Ethanol], [$204.8 "s"$], [$215.5 "s"$], [$+10.6 "s"$],
-      [N₂O / IPA], [$207.0 "s"$], [$217.7 "s"$], [$+10.7 "s"$],
-      [GOX / Ethanol], [$225.6 "s"$], [$237.8 "s"$], [$+12.2 "s"$],
-      [GOX / IPA], [$230.1 "s"$], [$242.4 "s"$], [$+12.4 "s"$],
-    )
-  ),
-  caption: [Sea-level pressure sensitivity for finalist propellants. Values are generated by the included RocketCEA script and should be regenerated if the propellant model, ambient pressure, or chemistry mode changes.],
-) <tbl-pc-sensitivity>
 
 = Propellant <propellant>
 
@@ -188,19 +163,6 @@ Select a practical non-cryogenic oxidizer/fuel pair for a low-altitude throttlea
 == Thermochemical Method and Evidence Standard
 
 All thermochemical values in this section use the included script #link("optimize_cea.py")[optimize_cea.py] and the generated output package @cea_hopper_runs_2026. The script wraps RocketCEA, which is a Python interface to NASA CEA. NASA CEA computes chemical-equilibrium rocket performance and supports equilibrium and frozen expansion modes @mcbride1996cea. RocketCEA documents `get_Isp` as vacuum impulse and `estimate_Ambient_Isp` as the function that applies a specified ambient pressure and reports the operating mode @rocketcea_functions @rocketcea_ambient.
-
-The design-basis comparison uses:
-
-- $P_c = 150 "psia"$.
-- $P_"amb" = 14.7 "psia"$.
-- Shifting-equilibrium chemistry.
-- O/F swept over a broad candidate-specific range.
-- At each O/F, $epsilon$ chosen so that $P_e approx P_"amb"$.
-- Sea-level impulse computed with `estimate_Ambient_Isp`, not vacuum `get_Isp`.
-
-#warn-box("Performance-value rule")[
-  A CEA/RocketCEA performance number is incomplete unless it states $P_c$, $P_"amb"$, $epsilon$, $P_e$, O/F, chemistry mode, and whether the reported impulse is $I_"sp,SL"$ or $I_"sp,vac"$. In this notebook, propellant selection uses sea-level ambient-corrected $I_"sp,SL"$.
-]
 
 #figure(
   image("rocket_outputs/figures/batch_optimized_sea_level_isp.png", width: 92%),
@@ -267,10 +229,6 @@ The four viable first-prototype finalists are N₂O/IPA, N₂O/ethanol, GOX/IPA,
   caption: [Design-basis RocketCEA performance for finalist propellants. Conditions: $P_c = 150 "psia"$, $P_"amb" = 14.7 "psia"$, shifting-equilibrium chemistry, $P_e approx P_"amb"$ @cea_hopper_runs_2026.],
 ) <tbl-finalist-performance>
 
-#info-box("Key observation")[
-  At $P_c = 150 "psia"$ and sea-level ambient pressure, the GOX/alcohol options are about 19-25 s ahead of the N₂O/alcohol options in ideal ambient-corrected impulse. That advantage is real, but it must be traded against compressed-oxygen storage mass, regulator cost, oxygen cleaning, and fire safety. For a barely-flying hopper, feed-system risk can dominate ideal $I_"sp"$.
-]
-
 === Common N₂O Architecture
 
 N₂O is stored as a saturated liquid at its own vapor pressure. Resonac lists nitrous oxide vapor pressure at $20 degree "C"$ as $5.24 "MPa"$ and gives a critical temperature of $36.41 degree "C"$ with critical pressure $7.24 "MPa"$ @resonac_n2o. This allows compact self-pressurizing oxidizer storage without a separate high-pressure inert pressurant.
@@ -320,7 +278,7 @@ N₂O hardware must be kept oxygen-clean enough to avoid fuel contamination on t
 === N₂O / IPA
 
 #finalist-box[
-N₂O/IPA is the leading first-hopper selection. It is not the highest-$I_"sp"$ option, but it combines compact non-cryogenic oxidizer storage, easy fuel sourcing, direct VTVL precedent, and acceptable sea-level performance.
+N₂O/IPA is the leading first-hopper selection. It is not the highest-$I_"sp"$ option, but it combines easy fuel sourcing, direct VTVL precedent, and acceptable sea-level performance.
 ]
 
 Design-basis RocketCEA result: $I_"sp,SL" = 207.0 "s"$, $I_"sp,vac" = 244.6 "s"$, O/F $= 5.10$, $epsilon = 2.37$, $T_c = 3120 "K"$, and $c^* = 1590 "m/s"$.
@@ -488,8 +446,6 @@ Design implications:
 + Do not size final thrust or total propellant mass in this section; that belongs in the engine sizing and vehicle mass-convergence sections.
 
 = Engine Archetypes
-
-= Thermochemical Analysis
 
 = Engine Sizing
 
