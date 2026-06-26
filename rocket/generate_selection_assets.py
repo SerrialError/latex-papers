@@ -35,18 +35,18 @@ FUEL_DENSITY = {'IPA': DENSITY['IPA_kg_m3'], 'Ethanol': DENSITY['Ethanol_kg_m3']
 
 # Representative planning prices; replace with local quotes before procurement.
 PRICE = {
-    'N2O': (10.0, 20.0),        # USD/kg, 10-lb/bulk cylinder refill planning range
-    'GOX': (5.0, 12.0),         # USD/kg gas only, welding oxygen refill planning range
-    'IPA': (6.0, 13.0),         # USD/kg, 99% gallon/5-gal retail planning range
-    'Ethanol': (20.0, 45.0),    # USD/kg, 200-proof/denatured anhydrous planning range
-    'Peroxide85': (20.0, 60.0), # USD/kg quote-only hazardous oxidizer placeholder
+    'N2O': (18.0, 22.0),       # USD/kg, public motorsport refill anchor; local industrial quotes may be lower
+    'GOX': (5.0, 12.0),        # USD/kg gas only; supplier quotes are location/account dependent
+    'IPA': (8.0, 12.0),        # USD/kg, 99% gallon retail planning range
+    'Ethanol': (13.0, 30.0),   # USD/kg, 200-proof compatible denatured/tax-paid public anchors
+    'Peroxide85': (20.0, 60.0),# USD/kg quote-only hazardous oxidizer placeholder
 }
 
 HARDWARE = {
     'N2O': {
-        'storage_hardware_usd_low': 200,
-        'storage_hardware_usd_high': 650,
-        'notes': 'DOT nitrous cylinder(s), compatible valve, relief device, fill adapter; no oxidizer pressure regulator in baseline self-pressurized feed.'
+        'storage_hardware_usd_low': 300,
+        'storage_hardware_usd_high': 700,
+        'notes': 'DOT/motorsport nitrous cylinder(s), compatible valve, relief device, fill adapter; no oxidizer pressure regulator in baseline self-pressurized feed.'
     },
     'GOX': {
         'storage_hardware_usd_low': 650,
