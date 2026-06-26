@@ -1,10 +1,10 @@
 // ============================================================
-// VTVL HOPPER ENGINE
-// Preliminary non-cryogenic pressure-fed liquid engine study
+// PROPELLANT SELECTION — ENGINEERING NOTEBOOK ENTRY
+// VTVL Hopper Engine · storable pressure-fed liquid bipropellant
 // ============================================================
 #set page(
   paper: "us-letter",
-  margin: (top: 1.0in, bottom: 0.95in, left: 1.0in, right: 0.9in),
+  margin: (top: 1.1in, bottom: 1in, left: 1.15in, right: 1.0in),
   numbering: "1",
   header: context {
     set text(size: 8pt, fill: luma(120))
@@ -18,15 +18,9 @@
   },
 )
 
-#set text(size: 10.2pt)
-#set par(justify: true, leading: 0.63em)
+#set text(size: 10.3pt)
+#set par(justify: true, leading: 0.65em)
 #set heading(numbering: "1.1")
-#set list(indent: 1.15em, body-indent: 0.55em)
-#set enum(indent: 1.15em, body-indent: 0.55em)
-
-// Allow long table figures to break instead of colliding with later text.
-#show figure: set block(breakable: true)
-#show figure.where(kind: table): set figure.caption(position: top)
 
 // ---- Callout box macros ----
 #let warn-box(title, body) = block(
@@ -35,7 +29,7 @@
   stroke: (left: 4pt + rgb("#d97706")),
   inset: (left: 12pt, right: 10pt, top: 8pt, bottom: 10pt),
   radius: (right: 2pt),
-  below: 1.0em,
+  below: 1.2em,
 )[
   #text(weight: "bold")[#sym.triangle.stroked.r #title]
   #v(3pt)
@@ -48,9 +42,9 @@
   stroke: (left: 4pt + rgb("#dc2626")),
   inset: (left: 12pt, right: 10pt, top: 8pt, bottom: 10pt),
   radius: (right: 2pt),
-  below: 1.0em,
+  below: 1.2em,
 )[
-  #text(weight: "bold", fill: rgb("#b91c1c"))[Verdict: Eliminated]
+  #text(weight: "bold", fill: rgb("#b91c1c"))[Screen result: remove]
   #h(6pt) #body
 ]
 
@@ -60,9 +54,9 @@
   stroke: (left: 4pt + rgb("#16a34a")),
   inset: (left: 12pt, right: 10pt, top: 8pt, bottom: 10pt),
   radius: (right: 2pt),
-  below: 1.0em,
+  below: 1.2em,
 )[
-  #text(weight: "bold", fill: rgb("#15803d"))[Verdict: Finalist]
+  #text(weight: "bold", fill: rgb("#15803d"))[Decision]
   #h(6pt) #body
 ]
 
@@ -72,7 +66,7 @@
   stroke: (left: 4pt + rgb("#2563eb")),
   inset: (left: 12pt, right: 10pt, top: 8pt, bottom: 10pt),
   radius: (right: 2pt),
-  below: 1.0em,
+  below: 1.2em,
 )[
   #text(weight: "bold")[#title]
   #v(3pt)
@@ -93,14 +87,17 @@
 // =============================================================
 
 #v(0.5em)
-#align(center)[#text(size: 18pt, weight: "bold")[VTVL Hopper Engineering Notebook]]
-#align(center)[#text(size: 11pt)[Requirements and Propellant Selection]]
+#align(center)[
+  #text(size: 18pt, weight: "bold")[VTVL Hopper Engineering Notebook]
+]
 
-#v(0.5em)
-#line(length: 100%, stroke: 1.3pt)
-#v(0.8em)
+#pagebreak()
 
-= Design Requirements <requirements>
+#outline()
+
+#pagebreak()
+
+= Design Requirements
 
 == Mission Objective
 
@@ -154,298 +151,229 @@ The requirements below are limited to items that must be true before the design 
   caption: [Sizing variables intentionally deferred to later notebook sections.],
 ) <tbl-sizing-vars>
 
-= Propellant <propellant>
+= Propellant
 
-== Problem
+== Define the Problem
 
-Select a practical non-cryogenic oxidizer/fuel pair for a low-altitude throttleable hopper. The selected pair should minimize development risk and stored-energy complexity while still keeping propellant mass, tank size, injector design, cooling, ignition, and operating procedures tractable.
+Select a storable oxidizer/fuel pair for a small pressure-fed VTVL hopper. The selected pair must support repeatable throttling, safe ground testing, affordable consumables, realistic tankage, and a credible path to injector and cooling design. The decision is not "maximize $I_"sp"$"; it is "minimize total development risk while preserving enough performance for a minimal controlled hop."
 
-== Thermochemical Method and Evidence Standard
+Categories of Analysis
+- Cost
+- Storage mass and volume
+- Stability/Predictability
+- Development risk
+- Performance
+- Complexity
 
-All thermochemical values in this section use the included script #link("optimize_cea.py")[optimize_cea.py] and the generated output package @cea_hopper_runs_2026. The script wraps RocketCEA, which is a Python interface to NASA CEA. NASA CEA computes chemical-equilibrium rocket performance and supports equilibrium and frozen expansion modes @mcbride1996cea. RocketCEA documents `get_Isp` as vacuum impulse and `estimate_Ambient_Isp` as the function that applies a specified ambient pressure and reports the operating mode @rocketcea_functions @rocketcea_ambient.
+== Brainstorm Solutions
+
+=== Hard Screens
+
+These families fail a fixed constraint and are removed before detailed trade scoring.
+
+#block[
+#set text(size: 8.5pt)
+#table(
+  columns: (1.35fr, 2.7fr),
+  fill: tfill,
+  inset: 4pt,
+  [*Candidate*], [*Reason for removal*],
+  [LOX-based combinations], [They violate the no-cryogenic first-article constraint. A LOX engine is a valid later project, not the fastest safe path to this hopper.],
+  [Hydrazine, MMH, UDMH, NTO], [The toxicity and legal burden are incompatible with the intended small-team, low-budget test program.],
+  [RFNA/alcohol], [Corrosive oxidizer handling and compatibility burden are not acceptable for the preferred aluminum/stainless build.],
+  [90%+ H₂O₂ / alcohol], [High-test peroxide is a specialized oxidizer with severe decomposition and contamination hazards; sourcing and handling dominate the project.],
+)
+]
+
+=== Feasible Solutions
+
+#block[
+#set text(size: 8.3pt)
+#table(
+  columns: (1.45fr, 1.8fr, 2.3fr),
+  fill: tfill,
+  inset: 4pt,
+  [*Candidate family*], [*Why it is worth considering*], [*Initial concerns to test*],
+  [N₂O/alcohols], [Self-pressurizing oxidizer, compact liquid storage, non-cryogenic, active small-VTVL precedent.], [Two-phase injector flow, tank-temperature sensitivity, oxidizer pressure decay during burn.],
+  [GOX/alcohols], [Single-phase oxidizer metering, stable regulator-fed pressure, easier analytical injector sizing.], [Large high-pressure gas volume, regulator cost, oxygen cleaning, tank mass.],
+  [H₂O₂/alcohols], [Dense storable oxidizer; 85% peroxide performance is close to N₂O/alcohol in the sea-level ambient comparison.], [High-concentration peroxide sourcing, catalyst/ignition hardware, decomposition compatibility, hazardous transport.],
+  [N₂O or GOX with methanol], [Methanol is cheap and historically common in rocket fuels.], [Toxicity and no computed performance advantage over IPA/ethanol.],
+  [N₂O with gaseous fuels], [Some spacecraft and hybrid literature exists; gaseous fuels can simplify atomization.], [Poor fuel storage density and pressure-vessel mass for a 60 s ground hopper.],
+  [N₂O/RP-1 or kerosene], [Dense fuel; common hydrocarbon fuel.], [Coking/soot and regenerative cooling complexity are poor matches for a small reusable engine.],
+)
+]
+
+== Screen the Candidate Set
+
+The table below is generated from the companion RocketCEA project at $P_c = 150 "psia"$, $P_"amb" = 14.7 "psia"$, and a sea-level-matched nozzle. Values are shifting-equilibrium RocketCEA/NASA CEA outputs @cea_hopper_runs_2026.
+
+#block[
+#set text(size: 8.0pt)
+#table(
+  columns: (1.25fr, 0.7fr, 0.65fr, 0.65fr, 0.72fr, 0.78fr, 1.75fr),
+  fill: tfill,
+  inset: 3.6pt,
+  [*Candidate*], [*$I_"sp,SL"$*], [*O/F*], [*$epsilon$*], [*$T_c$ K*], [*$c^*$ m/s*], [*Screen result*],
+  [GOX / IPA], [230.1 s], [1.65], [2.43], [3237], [1762], [Keep as GOX finalist. Best computed sea-level impulse, but GOX storage/hardware dominates.],
+  [GOX / Ethanol], [225.6 s], [1.55], [2.45], [3187], [1727], [Keep as GOX finalist. Slightly lower computed $I_"sp"$ than GOX/IPA but stronger ignition/cooling evidence.],
+  [GOX / Methanol], [221.3 s], [1.20], [2.46], [3074], [1693], [Remove. No advantage over GOX/ethanol or GOX/IPA, with worse toxicity.],
+  [N₂O / IPA], [207.0 s], [5.10], [2.37], [3120], [1590], [Keep. Best N₂O/alcohol computed result and strongest VTVL heritage.],
+  [N₂O / Ethanol], [204.8 s], [4.65], [2.38], [3064], [1573], [Keep. Strong static-fire literature and better coolant conductivity.],
+  [85% H₂O₂ / IPA], [203.2 s], [5.65], [2.37], [2553], [1562], [Near miss only. Dense oxidizer but sourcing/catalyst/decomposition burden is high.],
+  [N₂O / Methanol], [203.0 s], [3.50], [2.38], [2972], [1559], [Remove. No performance advantage and worse toxicity.],
+  [85% H₂O₂ / Ethanol], [201.1 s], [5.00], [2.36], [2507], [1547], [Near miss only; same peroxide concerns.],
+  [70% H₂O₂ / IPA], [186.9 s], [7.20], [2.31], [2184], [1441], [Remove. Low performance without solving peroxide access/catalyst risk.],
+  [70% H₂O₂ / Ethanol], [185.0 s], [6.30], [2.30], [2139], [1426], [Remove. Low performance without solving peroxide access/catalyst risk.],
+)
+]
 
 #figure(
   image("rocket_outputs/figures/batch_optimized_sea_level_isp.png", width: 92%),
   caption: [Generated RocketCEA comparison for optimized sea-level impulse at $P_c = 150 "psia"$, $P_"amb" = 14.7 "psia"$, shifting-equilibrium chemistry, and $P_e approx P_"amb"$ nozzle sizing @cea_hopper_runs_2026.],
 ) <fig-cea-batch-isp>
 
-== Candidate Survey
+== Quantitative Sourcing and System Sizing
 
-=== Hard-Eliminated Candidates
+Pricing below is a planning model, not a purchase instruction. Industrial gas prices vary by region, account status, deposit/rental policy, and cylinder exchange rules. The useful engineering comparison is the order of magnitude: GOX consumables can be cheap, but the storage/regulator system is expensive and heavy; N₂O consumables are more expensive per kilogram, but the liquid storage is much smaller and the tank is also the pressure source.
 
-These combinations are removed before finalist comparison because a safety, legality, sourcing, or architecture constraint is sufficient by itself.
 
-- *LOX-based propellants* (LOX/ethanol, LOX/RP-1, LOX/LCH₄, LOX/LH₂): eliminated because the first prototype forbids cryogenic storage.
-- *Hydrazine-family fuels, MMH, UDMH, and NTO*: eliminated for toxicity, regulatory burden, and handling risk.
-- *RFNA / ethanol*: eliminated for toxicity, corrosion, and incompatibility with the low-cost aluminum/stainless construction path.
-- *High-test peroxide at 90%+*: eliminated for the first prototype because the project does not yet have the sourcing, cleaning, catalyst-bed, compatibility, and decomposition-risk controls required for this oxidizer class @cervone2006.
-- *N₂O / RP-1 or kerosene*: eliminated for this regen-cooled first prototype because fuel coking and residue management are unnecessary risks when alcohol fuels are available.
+#block[
+#set text(size: 8.2pt)
+#table(
+  columns: (1.0fr, 1.65fr, 1.2fr, 2.1fr),
+  fill: tfill,
+  inset: 3.8pt,
+  [*Material*], [*Practical acquisition route*], [*Planning price*], [*Design note*],
+  [N₂O], [Local welding/specialty gas, motorsport, food-service gas supplier], [\$10--\$20/kg], [Cylinder exchange/refill pricing is local and quote-dependent. Use kg-scale cylinders, not small chargers.],
+  [GOX], [Welding oxygen cylinder exchange or industrial gas supplier], [\$5--\$12/kg gas], [Gas is cheap; regulator, cylinder, CGA-540 hardware, and oxygen-clean plumbing dominate.],
+  [99% IPA], [Hardware, janitorial, lab, or chemical supplier], [\$6--\$13/kg], [Widely available as a single high-purity product grade. 70% rubbing alcohol is not acceptable.],
+  [Anhydrous ethanol], [Industrial/lab chemical supplier; denatured 200-proof acceptable if compatible], [\$20--\$45/kg], [More expensive and procurement-sensitive than IPA. 190-proof contains water and is not the baseline fuel.],
+  [70--85% H₂O₂], [Specialty chemical supplier; high-concentration grades usually quote/hazmat], [\$20--\$60+/kg], [35% and higher peroxide is a regulated/special-handling chemical family in the United States; 70% is not ordinary pool-supply grade @federalregister_cfats2007.],
+)
+]
 
-=== Performance-Eliminated or Deprioritized Candidates
 
-#figure(
-  compact-table(
-    table(
-      columns: (1.45fr, 0.8fr, 0.75fr, 0.8fr, 2.5fr),
-      fill: tfill,
-      align: (left, center, center, center, left),
-      inset: 4.5pt,
-      [*Candidate*], [*O/F*], [*$epsilon$*], [*$I_"sp,SL"$*], [*Disposition*],
-      [70% H₂O₂ / Ethanol], [6.30], [2.30], [$185.0 "s"$], [Eliminated: low sea-level performance plus peroxide handling complexity.],
-      [70% H₂O₂ / IPA], [7.20], [2.31], [$186.9 "s"$], [Eliminated: low sea-level performance plus peroxide handling complexity.],
-      [85% H₂O₂ / Ethanol], [5.00], [2.36], [$201.1 "s"$], [Deprioritized: similar to N₂O/alcohol impulse but with peroxide-specific catalyst and decomposition hazards.],
-      [85% H₂O₂ / IPA], [5.65], [2.37], [$203.2 "s"$], [Deprioritized: no clear advantage over N₂O/alcohol for a first hopper.],
-      [N₂O / Methanol], [3.50], [2.38], [$203.0 "s"$], [Deprioritized: below N₂O/IPA and adds methanol toxicity.],
-      [GOX / Methanol], [1.20], [2.46], [$221.3 "s"$], [Deprioritized: below GOX/IPA and GOX/ethanol with no practical offsetting advantage.],
-    )
-  ),
-  caption: [Sea-level performance screening for non-finalist liquid candidates. Conditions: $P_c = 150 "psia"$, $P_"amb" = 14.7 "psia"$, shifting-equilibrium chemistry, $P_e approx P_"amb"$ @cea_hopper_runs_2026.],
-) <tbl-screening>
+#block[
+#set text(size: 8.0pt)
+#table(
+  columns: (1.15fr, 0.62fr, 0.72fr, 0.72fr, 0.72fr, 0.85fr, 0.95fr),
+  fill: tfill,
+  inset: 3.4pt,
+  [*Case*], [*Thrust*], [*Total prop.*], [*Oxidizer*], [*Fuel*], [*Ox storage*], [*Propellant cost*],
+  [N₂O / IPA], [200 N], [5.91 kg], [4.94 kg], [0.97 kg], [7.9 L], [\$55--\$111],
+  [N₂O / IPA], [400 N], [11.82 kg], [9.88 kg], [1.94 kg], [15.8 L], [\$110--\$223],
+  [N₂O / Ethanol], [200 N], [5.97 kg], [4.92 kg], [1.06 kg], [7.9 L], [\$70--\$146],
+  [N₂O / Ethanol], [400 N], [11.95 kg], [9.83 kg], [2.11 kg], [15.7 L], [\$141--\$292],
+  [GOX / IPA], [200 N], [5.32 kg], [3.31 kg], [2.01 kg], [17.5 L], [\$29--\$66],
+  [GOX / IPA], [400 N], [10.64 kg], [6.62 kg], [4.01 kg], [34.9 L], [\$57--\$132],
+  [GOX / Ethanol], [200 N], [5.42 kg], [3.30 kg], [2.13 kg], [17.4 L], [\$59--\$135],
+  [GOX / Ethanol], [400 N], [10.85 kg], [6.59 kg], [4.25 kg], [34.8 L], [\$118--\$271],
+)
+]
 
-*H₂O₂ at 80-85% / ethanol or IPA.* This concentration is more accessible than 90%+ peroxide, but it still requires peroxide-compatible storage, cleaning, decomposition controls, and usually catalyst hardware. The 265 s value sometimes quoted from peroxide monopropellant development literature is a high-expansion-ratio vacuum monopropellant number and does not apply to this low-expansion sea-level bipropellant comparison @cervone2006. At the design-basis condition, 85% peroxide/alcohol does not materially outperform N₂O/alcohol and is not the lowest-risk path.
+The GOX volume in the table assumes storage near 2200 psia and 293 K using the ideal-gas law; the N₂O volume assumes saturated-liquid storage near room temperature with a 20% ullage/design margin. These are comparison numbers, not final pressure-vessel dimensions. Candidate pressure vessels still need manufacturer ratings, valve details, fill rules, and compatibility checks @cost_model_2026.
 
-*Methanol combinations.* Methanol has legitimate historical rocket use, including as part of German C-Stoff mixtures, but it does not outperform ethanol or IPA in the design-basis RocketCEA comparison. It also has a worse handling profile; OSHA lists a 200 ppm permissible exposure limit for methyl alcohol @osha_methanol. Methanol remains technically possible, but it does not merit a finalist slot.
+== Peroxide and Methanol Near-Misses
 
-*N₂O with gaseous hydrocarbon fuels.* Ethylene, ethane, and propane can be made to work in propulsion systems, but they are a poor match to this ground hopper. Ethylene has a critical temperature of about $282.5 "K"$ ($9.3 degree "C"$), so it cannot be stored as a normal room-temperature liquid; NIST lists ethylene critical data near $T_c = 282.5 "K"$ and $P_c = 50.6 "bar"$ @nist_ethylene. Propane is easier to store, but its room-temperature vapor pressure is not enough to feed a $P_c = 150 "psia"$ engine without additional pressurization @nist_propane. Liquid alcohol fuels win on density, sourcing, cooling usefulness, and injector simplicity.
+85% H₂O₂/alcohol is not dismissed because of sea-level performance alone. In the baseline comparison it is close to N₂O/alcohol: 85% H₂O₂/IPA gives 203.2 s, only 3.8 s below N₂O/IPA @cea_hopper_runs_2026. It is removed because the supporting architecture is worse for this project: high-concentration peroxide sourcing is specialized, material compatibility is narrow, decomposition contamination can be violent, and practical engines often need a catalyst or dedicated ignition/decomposition hardware @cervone2006 @federalregister_cfats2007.
 
-== The Four Viable Finalists
+70% H₂O₂ is not ordinary pool-supply grade in the sense needed here. Even if a 70% source is found, sea-level ambient-corrected performance is about 185--187 s at the baseline condition, while retaining the peroxide compatibility and handling burden @cea_hopper_runs_2026.
 
-The four viable first-prototype finalists are N₂O/IPA, N₂O/ethanol, GOX/IPA, and GOX/ethanol. They are not equivalent: GOX/alcohol has better design-basis sea-level performance and easier single-phase injector modeling, while N₂O/alcohol has compact self-pressurizing oxidizer storage and direct small-hopper precedent.
+Methanol combinations are also removed. Methanol does not outperform the matching IPA/ethanol cases in the baseline comparison, and the CDC/NIOSH pocket guide lists skin absorption as an exposure route, OSHA PEL of 200 ppm, and symptoms including visual disturbance and optic nerve damage @cdc_methanol. That is a poor trade for no performance advantage.
 
-#figure(
-  compact-table(
-    table(
-      columns: (1.25fr, 0.7fr, 0.7fr, 0.85fr, 0.85fr, 0.85fr, 0.85fr),
-      fill: tfill,
-      align: (left, center, center, center, center, center, center),
-      inset: 4.5pt,
-      [*Propellant*], [*O/F*], [*$epsilon$*], [*$I_"sp,SL"$*], [*$I_"sp,vac"$*], [*$T_c$*], [*$c^*$*],
-      [GOX / IPA], [1.65], [2.43], [$230.1 "s"$], [$272.9 "s"$], [$3237 "K"$], [$1762 "m/s"$],
-      [GOX / Ethanol], [1.55], [2.45], [$225.6 "s"$], [$268.0 "s"$], [$3187 "K"$], [$1727 "m/s"$],
-      [N₂O / IPA], [5.10], [2.37], [$207.0 "s"$], [$244.6 "s"$], [$3120 "K"$], [$1590 "m/s"$],
-      [N₂O / Ethanol], [4.65], [2.38], [$204.8 "s"$], [$242.2 "s"$], [$3064 "K"$], [$1573 "m/s"$],
-    )
-  ),
-  caption: [Design-basis RocketCEA performance for finalist propellants. Conditions: $P_c = 150 "psia"$, $P_"amb" = 14.7 "psia"$, shifting-equilibrium chemistry, $P_e approx P_"amb"$ @cea_hopper_runs_2026.],
-) <tbl-finalist-performance>
-
-=== Common N₂O Architecture
-
-N₂O is stored as a saturated liquid at its own vapor pressure. Resonac lists nitrous oxide vapor pressure at $20 degree "C"$ as $5.24 "MPa"$ and gives a critical temperature of $36.41 degree "C"$ with critical pressure $7.24 "MPa"$ @resonac_n2o. This allows compact self-pressurizing oxidizer storage without a separate high-pressure inert pressurant.
-
-The disadvantage is that feed pressure is temperature-dependent. The oxidizer tank, injector pressure drop, oxidizer mass flow, and thrust map change with tank temperature and with evaporative cooling during discharge. Any N₂O engine must therefore treat tank temperature and pressure as control inputs, not background conditions.
-
-==== Injector: Two-Phase Flow
-
-N₂O can flash through restrictions because it is often near saturation before the injector. The standard incompressible single-phase orifice equation,
-
-$ dot(m) = C_d A sqrt(2 rho Delta P) $
-
-is useful only as an upper-bound starting point for the oxidizer injector. Dyer-style non-homogeneous non-equilibrium modeling, homogeneous equilibrium modeling, and cold-flow/hot-fire calibration are needed for credible final sizing @dyer2007 @solomon2011 @deisenroth2019 @zimmermann2022.
-
-#figure(
-  compact-table(
-    table(
-      columns: (1.2fr, 1.8fr, 1.45fr, 1.8fr),
-      fill: tfill,
-      align: (left, left, left, left),
-      inset: 4.5pt,
-      [*Model*], [*Assumption*], [*Expected bias*], [*Use in this project*],
-      [SPI], [Single-phase incompressible liquid.], [Often overpredicts N₂O oxidizer flow after flashing starts.], [Upper-bound geometry estimate only.],
-      [HEM], [Two-phase thermodynamic equilibrium through the restriction.], [Can underpredict short-orifice flow where equilibrium is not reached.], [Lower-bound check and long-channel reference.],
-      [Dyer / NHNE], [Non-equilibrium transition between SPI and HEM.], [Most practical published engineering model for self-pressurizing oxidizer injectors.], [Primary N₂O injector sizing model before test calibration.],
-    )
-  ),
-  caption: [N₂O injector mass-flow model hierarchy.],
-) <tbl-n2o-injector-models>
-
-The practical N₂O injector workflow is:
-
-+ Size an initial oxidizer orifice using SPI.
-+ Compute HEM for the same geometry to establish a lower-bound flow estimate.
-+ Apply Dyer/NHNE or a comparable two-phase model using the selected orifice $L/D$.
-+ Cold-flow the injector over the expected tank-temperature range.
-+ Update the throttle map using hot-fire data.
-
-==== Throttling Behavior
-
-The AEL N₂O/IPA throttle work is directly relevant because it studied a small closed-loop throttleable VTVL thruster at approximately the right architecture. The reported behavior was dominated by N₂O phase change through the control valve and injector rather than by simple hydraulic pressure-drop scaling @waugh2018. This makes empirical throttle-map calibration mandatory for a flight hopper.
-
-==== Material Compatibility and Operations
-
-N₂O hardware must be kept oxygen-clean enough to avoid fuel contamination on the oxidizer side. Aluminum and stainless hardware can be used when the system is designed around compatible seals, cleaned assembly practice, relief devices, and conservative temperature control. The Las Vegas temperature case is handled separately in @las-vegas-warning.
+== Analyze Survivors
 
 === N₂O / IPA
 
-#finalist-box[
-N₂O/IPA is the leading first-hopper selection. It is not the highest-$I_"sp"$ option, but it combines easy fuel sourcing, direct VTVL precedent, and acceptable sea-level performance.
-]
+#figure(
+  image("rocket_outputs/figures/N2O_IPA_of_isp_and_oxidizer_mass.png", width: 100%),
+  caption: [Individual O/F curve. The dashed curve in each panel is oxidizer mass required for a 200 N, 60 s burn.],
+) <fig-of-OF-curve-nitrous-oxide-ipa>
 
-Design-basis RocketCEA result: $I_"sp,SL" = 207.0 "s"$, $I_"sp,vac" = 244.6 "s"$, O/F $= 5.10$, $epsilon = 2.37$, $T_c = 3120 "K"$, and $c^* = 1590 "m/s"$.
 
-*Flight heritage.* GSP's Colibri vehicle used a bipropellant engine with N₂O and IPA. Kistler reports that Colibri is a $2.45 "m"$ reusable VTVL demonstrator with up to $1.25 "kN"$ thrust; by October 2024 it had completed 53 flights with safe landings @kistler2024. European Spaceflight reports a 105 m free flight on 18 October 2024, a 30 m lateral translation, and a 60 s flight time @europeanspaceflight2024. This is the closest documented analog to the intended project.
+N₂O/IPA survives because it best matches the actual hopper mission. The sea-level ambient-corrected computed performance is $I_"sp,SL" = 207.0 "s"$ at O/F = 5.10 and $epsilon = 2.37$ @cea_hopper_runs_2026. That is not high compared with vacuum-optimized numbers, but it is enough for a minimal hopper and avoids the hardware burden of high-pressure GOX storage.
 
-*Fuel sourcing.* 99% IPA is widely available through hardware, janitorial, and chemical suppliers. 70% disinfectant is not suitable because the water content changes performance and ignition behavior.
+The most important external evidence is direct VTVL heritage. Gruyère Space Program's Colibri vehicle uses an N₂O/IPA bipropellant engine and is documented as a 2.45 m VTVL demonstrator with up to 1.25 kN thrust @kistler2024. European Spaceflight reported the October 18, 2024 free flight to 105 m altitude, 30 m lateral translation, and 60 s duration @europeanspaceflight2024. That is the closest public analog to this project.
 
-*Cooling.* IPA has slightly higher room-temperature specific heat than ethanol, while ethanol has higher thermal conductivity. CRC values used here are $c_p approx 2.68 "kJ/kg/K"$ and $k approx 0.135 "W/m/K"$ for IPA at room temperature @crc2023. Both alcohols remain plausible regenerative coolants at this scale; final margin belongs in the cooling section.
+#finalist-box[*Selected baseline.* The main risk is not performance; it is injector/feed calibration for flashing N₂O. The advantage is compact oxidizer storage, no oxidizer regulator, cheap fuel, and direct small-VTVL precedent.]
 
 === N₂O / Ethanol
 
-#finalist-box[
-N₂O/ethanol is the strongest N₂O backup path because it has a larger academic static-test literature base and slightly better thermal conductivity as a coolant.
+#figure(
+  image("rocket_outputs/figures/N2O_Ethanol_of_isp_and_oxidizer_mass.png", width: 100%),
+  caption: [Individual O/F curve. The dashed curve in each panel is oxidizer mass required for a 200 N, 60 s burn.],
+) <fig-of-OF-curve-nitrous-oxide-etgabik>
+
+N₂O/ethanol is the strongest backup because it has broader academic static-fire literature and better coolant thermal conductivity. The sea-level ambient-corrected computed performance is $I_"sp,SL" = 204.8 "s"$ at O/F = 4.65 and $epsilon = 2.38$ @cea_hopper_runs_2026. The difference from N₂O/IPA is only 2.2 s in the baseline comparison, so it should not drive the decision.
+
+Ethanol has slightly lower specific heat but higher thermal conductivity than IPA at room temperature; the coolant trade is therefore not one-sided. IPA has slightly better bulk heat capacity, while ethanol has better film-side conduction margin @crc2023.
+
+#finalist-box[*Backup finalist.* Use ethanol if the design is intentionally aligned with N₂O/ethanol literature or if regen-cooling margin dominates fuel procurement convenience.]
+
+== N₂O Architecture Risk: Feed, Injector, and Environment
+
+N₂O is stored as a saturated liquid at its own vapor pressure. Resonac lists high-purity N₂O vapor pressure as 5.24 MPa at 20°C and gives a critical temperature of 36.41°C with critical pressure 7.24 MPa @resonac_n2o. This enables self-pressurization, but it also means feed pressure changes strongly with tank temperature.
+
+#warn-box("Las Vegas design-basis implication")[
+A N₂O tank in direct summer sun can approach or exceed the 36.4°C critical temperature. The baseline control map should be built around measured tank temperature and pressure, and the pressure-vessel MEOP check should use the highest credible tank temperature, not just nominal room temperature. Testing in shade or morning conditions is not a convenience; it is part of keeping the feed model inside the calibrated regime.
 ]
 
-Design-basis RocketCEA result: $I_"sp,SL" = 204.8 "s"$, $I_"sp,vac" = 242.2 "s"$, O/F $= 4.65$, $epsilon = 2.38$, $T_c = 3064 "K"$, and $c^* = 1573 "m/s"$.
+When saturated liquid N₂O accelerates through valves and injector passages, pressure reduction can initiate flashing before the chamber. The standard single-phase incompressible equation is therefore only a bounding model:
 
-*Experimental literature.* NMIMT/Sandia conducted N₂O/ethanol engine development and test work, and ISAS/JAXA studied a 2 kN-class N₂O/ethanol propulsion system @phillip2016 @youngblood2016 @tokudome2021. These sources support the credibility of N₂O/ethanol combustion development, but their reported impulse values must not be transferred blindly unless $P_c$, $P_"amb"$, nozzle expansion, and data-reduction basis match this design.
+$ dot(m) = C_d A sqrt(2 rho Delta P) $
 
-*Cooling.* Ethanol's room-temperature thermal conductivity is about $0.171 "W/m/K"$ versus about $0.135 "W/m/K"$ for IPA, while its specific heat is slightly lower, about $2.57 "kJ/kg/K"$ versus $2.68 "kJ/kg/K"$ @crc2023. This makes ethanol attractive if the cooling jacket is heat-flux limited rather than bulk-temperature-rise limited.
+N₂O injector design should bracket the flow with SPI and HEM and then use a non-equilibrium model such as Dyer/NHNE for the design estimate. Published work on self-pressurizing propellant flow and N₂O injectors supports this SPI/HEM/NHNE framing @dyer2007 @deisenroth2019 @solomon2011 @zimmermann2022.
 
-*Sourcing.* Anhydrous ethanol requires more procurement control than IPA. 190-proof ethanol contains enough water to change performance and optimum O/F, so 200-proof or otherwise documented water content is required for repeatable CEA-to-test comparison.
-
-=== Common GOX Architecture
-
-GOX provides the cleanest injector physics: the oxidizer can be treated as a regulated single-phase gas upstream of the injector, so the first-pass orifice model is much more predictable than N₂O flashing flow. The trade is tankage and operations. A useful GOX system requires a high-pressure oxygen cylinder or lightweight vessel, a high-flow oxygen-compatible regulator, oxygen-clean assembly practice, and strict separation between oxygen-side and fuel-side tooling.
-
-For equal impulse, GOX generally needs substantially more oxidizer storage volume than liquid N₂O. The ideal-gas oxygen volume estimate is:
-
-$ V_"GOX" = (m_"O2" R_"O2" T) / P. $
-
-At 2200 psia and 300 K, the gas volume for a few kilograms of oxygen is already tens of liters. The equivalent N₂O mass stores as a dense saturated liquid, typically giving a much smaller tank volume. This storage-volume penalty is the main reason GOX is not automatically selected despite its better sea-level impulse.
-
-=== GOX / IPA
-
-#finalist-box[
-GOX/IPA is the design-basis performance leader among the non-cryogenic candidates analyzed here, but it carries the compressed-oxygen storage and regulator burden.
+#block[
+#set text(size: 8.2pt)
+#table(
+  columns: (0.9fr, 1.7fr, 1.4fr, 1.5fr),
+  fill: tfill,
+  inset: 3.6pt,
+  [*Model*], [*Assumption*], [*Expected bias*], [*Use in this project*],
+  [SPI], [Single-phase incompressible liquid.], [Often overpredicts flashing N₂O flow.], [Upper-bound geometry check only.],
+  [HEM], [Two-phase thermodynamic equilibrium.], [Often lower-bound for short injector residence times.], [Lower-bound flow check.],
+  [Dyer / NHNE], [Non-homogeneous, non-equilibrium interpolation between SPI and HEM using residence/bubble-growth times.], [Best practical pre-test estimate for short rocket-injector passages.], [Design-reference model, then calibrate by hot fire.],
+  [Empirical map], [Valve command, tank state, and chamber response fitted from tests.], [Most reliable inside tested range.], [Required for throttle control.],
+)
 ]
 
-Design-basis RocketCEA result: $I_"sp,SL" = 230.1 "s"$, $I_"sp,vac" = 272.9 "s"$, O/F $= 1.65$, $epsilon = 2.43$, $T_c = 3237 "K"$, and $c^* = 1762 "m/s"$.
-
-GOX/IPA deserves a full design pass if the project can source oxygen-compatible regulators, vessels, valves, fittings, and cleaning procedures inside the budget. Its weakness is not performance; it is system mass, system cost, and oxygen safety practice.
+The AEL N₂O/IPA throttle-control work is especially relevant because it reports closed-loop throttling on a small N₂O/IPA VTVL thruster, where flashing behavior made oxidizer pressure-drop behavior more thermodynamic than a simple hydraulic orifice prediction @waugh2018. For this project, the practical implication is simple: N₂O injector and throttle design cannot be fully closed analytically. The engine needs calibration firings at multiple tank temperatures and throttle settings before flight.
 
 === GOX / Ethanol
+#figure(
+  image("rocket_outputs/figures/GOX_Ethanol_of_isp_and_oxidizer_mass.png", width: 100%),
+  caption: [Individual O/F curve. The dashed curve in each panel is oxidizer mass required for a 200 N, 60 s burn.],
+) <fig-of-OF-curve-GOX-ethanol>
 
-#finalist-box[
-GOX/ethanol is nearly as strong as GOX/IPA analytically and has useful ignition literature at comparable chamber pressure.
-]
+GOX/ethanol survives as the best alternative if the N₂O two-phase injector problem becomes unacceptable. The sea-level ambient-corrected computed performance is $I_"sp,SL" = 225.6 "s"$ at O/F = 1.55 and $epsilon = 2.45$ @cea_hopper_runs_2026. It gives simpler single-phase oxidizer metering and stable regulator-fed pressure, but the system-level cost is high.
 
-Design-basis RocketCEA result: $I_"sp,SL" = 225.6 "s"$, $I_"sp,vac" = 268.0 "s"$, O/F $= 1.55$, $epsilon = 2.45$, $T_c = 3187 "K"$, and $c^* = 1727 "m/s"$.
+A NASA ignition characterization program tested GOX/ethanol at 150 psia and O/F = 1.8, making this the best-documented GOX/alcohol reference point near the baseline chamber pressure @nasa1984. Oxygen-side hardware must be oxygen-cleaned and kept free of hydrocarbon contamination; the oxygen-cleaning and material-control burden is real, not paperwork @cga_g41.
 
-A 1984 NASA ignition characterization study tested GOX/ethanol near $P_c = 150 "psia"$ and O/F near 1.8 @nasa1984. That makes GOX/ethanol valuable as a lower-injector-risk fallback if N₂O two-phase design becomes the bottleneck.
+#finalist-box[*Engineering-risk alternate.* Choose GOX/ethanol only if avoiding N₂O two-phase modeling is worth the larger gas storage, regulator cost, and oxygen-clean hardware process.]
 
-== Decision Analysis
+=== GOX / IPA
+#figure(
+  image("rocket_outputs/figures/GOX_IPA_of_isp_and_oxidizer_mass.png", width: 100%),
+  caption: [Individual O/F curve. The dashed curve in each panel is oxidizer mass required for a 200 N, 60 s burn.],
+) <fig-of-OF-curve-GOX-ipa>
 
-=== Oxidizer-Level Trade: N₂O vs. GOX
+GOX/IPA has the best sea-level ambient-corrected computed performance in this set: $I_"sp,SL" = 230.1 "s"$ at O/F = 1.65 and $epsilon = 2.43$ @cea_hopper_runs_2026. The fuel is cheaper than anhydrous ethanol, but the fuel cost does not drive the GOX architecture. The expensive pieces are the oxidizer cylinder or custom gas vessel, high-flow oxygen regulator, CGA-540 adapters, oxygen-compatible valves, cleaning, and high-pressure fittings.
+
+#finalist-box[*Valid but not baseline.* GOX/IPA is a credible GOX alternate. It is not selected over GOX/ethanol because the main GOX advantage is single-phase oxygen metering, and GOX/ethanol has stronger nearby ignition-validation evidence.]
 
 #figure(
-  compact-table(
-    table(
-      columns: (1.4fr, 2.15fr, 2.15fr),
-      fill: tfill,
-      align: (left, left, left),
-      inset: 4.5pt,
-      [*Criterion*], [*N₂O path*], [*GOX path*],
-      [Sea-level performance], [Lower: about $205-207 "s"$ at 150 psia.], [Higher: about $226-230 "s"$ at 150 psia.],
-      [Oxidizer storage], [Compact saturated liquid; self-pressurizing.], [Bulky compressed gas unless a custom lightweight vessel is used.],
-      [Feed stability], [Tank pressure changes with temperature and discharge history.], [Regulated feed pressure can be stable and repeatable.],
-      [Injector physics], [Two-phase flashing; requires Dyer/HEM/SPI bracketing and testing.], [Mostly single-phase gas; simpler first-pass analysis.],
-      [Hardware cost], [No oxygen regulator; pressure vessel still safety-critical.], [High-flow oxygen regulator and oxygen-rated fittings are major cost items.],
-      [Operating risk], [Thermal management near N₂O critical temperature is central.], [Oxygen cleaning and combustion-contamination control are central.],
-      [Best reason to choose], [Compact, self-contained, directly relevant hopper precedent.], [Higher $I_"sp"$ and easier injector sizing.],
-    )
-  ),
-  caption: [Oxidizer-level architecture comparison.],
-) <tbl-oxidizer-trade>
+  image("rocket_outputs/figures/pressure_sensitivity.png", width: 100%),
+  caption: [Pressure sensitivity for the four surviving alcohol finalists @cea_hopper_runs_2026.],
+) <fig-pressure-sensitivity>
 
-GOX/IPA and GOX/ethanol are analytically attractive. They should win if the oxygen storage, regulator, cleaning, and mass model close. For the first low-complexity hopper path, N₂O remains more attractive because it avoids cryogenics and a regulated high-flow oxygen gas system while keeping the oxidizer tank compact.
+== Select Best Solution
 
-=== Fuel-Level Trade Inside the N₂O Path
+The high GOX performance and simple injector are real, but the gas storage and oxygen hardware penalty are large. The high peroxide density is real, but sourcing and decomposition risk dominate.
 
-#figure(
-  compact-table(
-    table(
-      columns: (1.65fr, 1.6fr, 1.6fr),
-      fill: tfill,
-      align: (left, left, left),
-      inset: 4.5pt,
-      [*Criterion*], [*N₂O / IPA*], [*N₂O / Ethanol*],
-      [Design-basis $I_"sp,SL"$], [$207.0 "s"$], [$204.8 "s"$],
-      [Optimum O/F], [5.10], [4.65],
-      [Flame temperature], [$3120 "K"$], [$3064 "K"$],
-      [Fuel access], [Excellent: 99% IPA is widely available.], [Moderate: anhydrous ethanol sourcing must be controlled.],
-      [Coolant $c_p$], [Slightly higher: $2.68 "kJ/kg/K"$ @crc2023.], [Slightly lower: $2.57 "kJ/kg/K"$ @crc2023.],
-      [Coolant thermal conductivity], [Lower: $0.135 "W/m/K"$ @crc2023.], [Higher: $0.171 "W/m/K"$ @crc2023.],
-      [VTVL precedent], [Direct: GSP Colibri and AEL work @kistler2024 @waugh2018.], [Strong static-test literature @phillip2016 @tokudome2021.],
-      [Primary advantage], [Sourcing and flight-relevant precedent.], [Academic literature and thermal conductivity.],
-    )
-  ),
-  caption: [N₂O/IPA versus N₂O/ethanol.],
-) <tbl-n2o-fuel-trade>
+#finalist-box[*Baseline propellant selection: N₂O / IPA.* N₂O/IPA has the strongest match to the mission because it combines compact self-pressurizing oxidizer storage, cheap and accessible fuel, and the most relevant small-VTVL flight precedent. The design must explicitly budget time for N₂O two-phase injector modeling and hot-fire calibration.]
 
-==== Pros and Cons
-
-#grid(
-  columns: (1fr, 1fr),
-  gutter: 1em,
-  [
-    ===== N₂O / IPA
-
-    *Advantages*
-    - Direct VTVL flight precedent at the closest public analog scale.
-    - IPA is inexpensive and easy to source at high purity.
-    - Slightly higher room-temperature $c_p$ than ethanol.
-    - AEL throttle work is on N₂O/IPA.
-
-    *Disadvantages*
-    - Lower thermal conductivity than ethanol.
-    - Less academic combustion literature than N₂O/ethanol.
-    - All N₂O two-phase injector and temperature risks still apply.
-  ],
-  [
-    ===== N₂O / Ethanol
-
-    *Advantages*
-    - Stronger academic static-test literature base.
-    - Higher thermal conductivity as a regenerative coolant.
-    - Historically common alcohol rocket fuel.
-    - Good backup if following NMIMT/JAXA data closely.
-
-    *Disadvantages*
-    - Anhydrous ethanol procurement is less convenient.
-    - Water content must be controlled.
-    - No direct small VTVL flight precedent as strong as GSP Colibri.
-  ],
-)
-
-=== Recommendation
-
-*N₂O/IPA is the primary first-hopper selection.* The reason is not maximum ideal impulse. The reason is total development risk: easy fuel sourcing, compact self-pressurizing oxidizer storage, and direct VTVL flight precedent outweigh a roughly 20-25 s ideal sea-level impulse advantage from GOX when the vehicle only needs to demonstrate controlled low-altitude flight.
-
-*N₂O/ethanol is the first backup.* Choose it if the cooling section shows ethanol's higher thermal conductivity is important, if anhydrous ethanol is already sourced, or if the design intentionally follows the NMIMT/JAXA N₂O/ethanol literature path.
-
-*GOX/IPA or GOX/ethanol remain performance backups.* Choose GOX if the project prioritizes injector simplicity and can close the compressed-oxygen regulator, vessel, cleaning, and mass budget. If GOX is chosen, IPA has the slightly higher design-basis RocketCEA result while ethanol has the stronger ignition-literature tie through the NASA study.
-
-== Las Vegas Operational Considerations <las-vegas-warning>
-
-#warn-box("N₂O critical temperature and MEOP definition")[
-  N₂O has a critical temperature of $36.41 degree "C"$ and critical pressure of $7.24 "MPa"$ @resonac_n2o. A N₂O tank in a hot vehicle, direct sun, or summer test area can approach a very different pressure state than the same tank in a shaded room. Tank temperature is therefore part of the design basis, not just an operating note.
-]
-
-Design implications:
-
-+ MEOP must be defined from the maximum credible filled-tank temperature.
-+ Fill fraction, ullage, relief devices, and tank material selection must be documented before any hot-weather oxidizer loading.
-+ Throttle maps must be temperature-indexed because N₂O vapor pressure changes injector pressure drop and mass flow.
-+ Test operations should standardize tank temperature or explicitly correct for it.
-
-== Propellant Section Next Actions
-
-+ Commit #link("rocket_outputs/data/batch_optimum_summary.csv")[batch_optimum_summary.csv] and #link("rocket_outputs/data/pressure_sweep_summary.csv")[pressure_sweep_summary.csv] with the notebook.
-+ For the selected N₂O/IPA baseline, run a dedicated CEA sweep after selecting actual fuel purity and expected chamber-pressure range.
-+ Build the N₂O injector model using SPI, HEM, and Dyer/NHNE bracketing before selecting orifice count and diameter.
-+ Do not size final thrust or total propellant mass in this section; that belongs in the engine sizing and vehicle mass-convergence sections.
-
-= Engine Archetypes
+*N₂O/ethanol* remains the backup fuel choice if the project chooses to align with N₂O/ethanol static-fire literature or needs ethanol's higher thermal conductivity for cooling margin. *GOX/ethanol* remains the alternate oxidizer architecture if two-phase N₂O flow becomes the dominant unacceptable risk. *GOX/IPA* is credible but not the reference GOX fuel because the fuel choice does not solve the GOX storage/regulator problem.
 
 = Engine Sizing
 

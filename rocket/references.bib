@@ -154,112 +154,121 @@
 }
 
 
-@TechReport{mcbride1996cea,
-  author      = {McBride, Bonnie J. and Gordon, Sanford},
-  title       = {Computer Program for Calculation of Complex Chemical Equilibrium Compositions and Applications II. Users Manual and Program Description},
+@Misc{rocketcea_docs,
+  author       = {{RocketCEA Developers}},
+  title        = {RocketCEA Functions Documentation},
+  year         = {2026},
+  url          = {https://rocketcea.readthedocs.io/en/latest/functions.html},
+  note         = {Accessed 2026-06-23. Documents that get_Isp returns vacuum Isp and that RocketCEA wraps NASA FORTRAN CEA.},
+}
+
+@Misc{rocketcea_ambient_isp,
+  author       = {{RocketCEA Developers}},
+  title        = {Ambient Isp Documentation},
+  year         = {2026},
+  url          = {https://rocketcea.readthedocs.io/en/latest/ambient_isp.html},
+  note         = {Accessed 2026-06-23. Documents ambient-pressure correction and estimate_Ambient_Isp.},
+}
+
+@TechReport{nasa_cea_manual,
+  author      = {Gordon, Sanford and McBride, Bonnie J.},
+  title       = {Computer Program for Calculation of Complex Chemical Equilibrium Compositions and Applications. Part I: Analysis},
   institution = {NASA Lewis Research Center},
-  type        = {NASA Reference Publication},
-  number      = {1311},
-  year        = {1996},
-  url         = {https://ntrs.nasa.gov/api/citations/19960044559/downloads/19960044559.pdf},
-  note        = {NASA RP-1311, CEA users manual},
-}
-
-@Misc{rocketcea_functions,
-  author       = {{Applied Python}},
-  title        = {RocketCEA Functions},
-  year         = {2026},
-  howpublished = {\url{https://rocketcea.readthedocs.io/en/latest/functions.html}},
-  note         = {RocketCEA v1.2.3 documentation},
-}
-
-@Misc{rocketcea_ambient,
-  author       = {{Applied Python}},
-  title        = {Ambient Isp},
-  year         = {2026},
-  howpublished = {\url{https://rocketcea.readthedocs.io/en/latest/ambient_isp.html}},
-  note         = {RocketCEA v1.2.3 documentation},
-}
-
-@Book{sutton2017,
-  author    = {Sutton, George P. and Biblarz, Oscar},
-  title     = {Rocket Propulsion Elements},
-  publisher = {John Wiley \& Sons},
-  edition   = {9},
-  year      = {2017},
-}
-
-@Misc{typst_bibliography_docs,
-  author       = {{Typst GmbH}},
-  title        = {Bibliography Function},
-  year         = {2026},
-  howpublished = {\url{https://typst.app/docs/reference/model/bibliography/}},
-  note         = {Typst documentation},
-}
-
-@Misc{typst_cite_docs,
-  author       = {{Typst GmbH}},
-  title        = {Cite Function},
-  year         = {2026},
-  howpublished = {\url{https://typst.app/docs/reference/model/cite/}},
-  note         = {Typst documentation},
-}
-
-@Misc{osha_methanol,
-  author       = {{Occupational Safety and Health Administration}},
-  title        = {Chemical Sampling Information: Methyl Alcohol},
-  howpublished = {\url{https://www.osha.gov/chemicaldata/91}},
-  note         = {Methanol occupational exposure information},
-}
-
-@Misc{typst_math_docs,
-  author       = {{Typst GmbH}},
-  title        = {Math Reference},
-  year         = {2026},
-  howpublished = {\url{https://typst.app/docs/reference/math/}},
-  note         = {Typst documentation. Math mode uses dollar-delimited equations; multi-letter text in math should be quoted.},
-}
-
-@Misc{typst_table_docs,
-  author       = {{Typst GmbH}},
-  title        = {Table Reference},
-  year         = {2026},
-  howpublished = {\url{https://typst.app/docs/reference/model/table/}},
-  note         = {Typst documentation for table semantics and table cells.},
-}
-
-@Misc{typst_figure_docs,
-  author       = {{Typst GmbH}},
-  title        = {Figure Reference},
-  year         = {2026},
-  howpublished = {\url{https://typst.app/docs/reference/model/figure/}},
-  note         = {Typst documentation. Large breakable figure contents require a breakable block show rule.},
-}
-
-@Misc{nist_ethylene,
-  author       = {{National Institute of Standards and Technology}},
-  title        = {NIST Chemistry WebBook: Ethylene},
-  howpublished = {\url{https://webbook.nist.gov/cgi/cbook.cgi?ID=C74851&Mask=4}},
-  note         = {NIST Chemistry WebBook, SRD 69. Phase-change and critical-property data.},
-}
-
-@Misc{nist_propane,
-  author       = {{National Institute of Standards and Technology}},
-  title        = {NIST Chemistry WebBook: Propane},
-  howpublished = {\url{https://webbook.nist.gov/cgi/cbook.cgi?ID=C74986&Mask=4}},
-  note         = {NIST Chemistry WebBook, SRD 69. Phase-change and vapor-pressure data.},
+  year        = {1994},
+  number      = {NASA RP-1311},
+  url         = {https://ntrs.nasa.gov/api/citations/19950013764/downloads/19950013764.pdf},
 }
 
 @Misc{cea_hopper_runs_2026,
-  author       = {{Project Rocket Hopper Analysis}},
-  title        = {RocketCEA Sea-Level Propellant Optimization Runs for VTVL Hopper Notebook},
+  author       = {{Hopper Propellant Analysis}},
+  title        = {RocketCEA Sea-Level Propellant Optimization Outputs for VTVL Hopper Trade Study},
   year         = {2026},
-  note         = {Local generated calculation package: optimize_cea.py, rocket_outputs/data/batch_optimum_summary.csv, pressure_sweep_summary.csv, overexpansion demonstration CSV, chemistry-mode comparison CSV, and associated plots. RocketCEA v1.2.3, Pc = 150 psia baseline unless otherwise noted.},
+  note         = {Local generated artifact: rocket_outputs/data and rocket_outputs/figures. Generated with optimize_cea.py using RocketCEA v1.2.3-equivalent API, Pc=150 psia baseline, Pamb=14.7 psia, sea-level-matched nozzle, shifting-equilibrium chemistry unless otherwise noted.},
 }
 
-@Book{clark1972,
-  author    = {Clark, John D.},
-  title     = {Ignition! An Informal History of Liquid Rocket Propellants},
-  publisher = {Rutgers University Press},
-  year      = {1972},
+@Misc{cost_model_2026,
+  author       = {{Hopper Propellant Analysis}},
+  title        = {Propellant Sourcing, Tank Sizing, and Cost Planning Model},
+  year         = {2026},
+  note         = {Local generated artifact: rocket_outputs/data/system_sizing_and_cost_summary.csv and propellant_price_assumptions.csv. Planning prices are placeholders to be replaced by local supplier quotes.},
+}
+
+@Misc{typst_syntax,
+  author       = {{Typst GmbH}},
+  title        = {Typst Syntax Reference},
+  year         = {2026},
+  url          = {https://typst.app/docs/reference/syntax/},
+  note         = {Accessed 2026-06-23. Documents math mode with dollar signs and raw/code text with backticks.},
+}
+
+@Misc{typst_figure,
+  author       = {{Typst GmbH}},
+  title        = {Typst Figure Reference},
+  year         = {2026},
+  url          = {https://typst.app/docs/reference/model/figure/},
+  note         = {Accessed 2026-06-23. Used for figure/table layout checks.},
+}
+
+@Misc{nist_oxygen,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {Thermophysical Properties of Oxygen},
+  year         = {2026},
+  url          = {https://webbook.nist.gov/cgi/fluid.cgi?ID=C7782447&Action=Page},
+  note         = {NIST Chemistry WebBook, SRD 69. Used for oxygen storage-property reference.},
+}
+
+@Misc{nist_ethanol,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {Ethanol Thermochemistry and Physical Properties},
+  year         = {2026},
+  url          = {https://webbook.nist.gov/cgi/cbook.cgi?ID=C64175},
+  note         = {NIST Chemistry WebBook, SRD 69.},
+}
+
+@Misc{nist_ipa,
+  author       = {{National Institute of Standards and Technology}},
+  title        = {2-Propanol Thermochemistry and Physical Properties},
+  year         = {2026},
+  url          = {https://webbook.nist.gov/cgi/cbook.cgi?ID=C67630},
+  note         = {NIST Chemistry WebBook, SRD 69.},
+}
+
+@Misc{cdc_methanol,
+  author       = {{Centers for Disease Control and Prevention / NIOSH}},
+  title        = {NIOSH Pocket Guide to Chemical Hazards: Methyl Alcohol},
+  year         = {2019},
+  url          = {https://www.cdc.gov/niosh/npg/npgd0397.html},
+  note         = {Lists exposure limits, skin absorption, symptoms, and target organs. Accessed 2026-06-23.},
+}
+
+@Misc{federalregister_cfats2007,
+  author       = {{Department of Homeland Security}},
+  title        = {Appendix to Chemical Facility Anti-Terrorism Standards; Final Rule},
+  year         = {2007},
+  url          = {https://www.federalregister.gov/documents/2007/11/20/E7-22058/appendix-to-chemical-facility-anti-terrorism-standards-final-rule},
+  note         = {72 FR 65396. Hydrogen peroxide concentration thresholds are relevant to sourcing/access screening.},
+}
+
+@Misc{cga_g41,
+  author       = {{Compressed Gas Association}},
+  title        = {CGA G-4.1: Cleaning Equipment for Oxygen Service},
+  year         = {2018},
+  url          = {https://www.cganet.com/},
+  note         = {Industry oxygen-cleaning reference. Exact edition access may require purchase.},
+}
+
+@Misc{airgas_supplier,
+  author       = {{Airgas}},
+  title        = {Industrial and Specialty Gas Supplier},
+  year         = {2026},
+  url          = {https://www.airgas.com/},
+  note         = {Representative U.S. supplier class for oxygen and nitrous oxide; local quote required for exact pricing.},
+}
+
+@Misc{linde_supplier,
+  author       = {{Linde}},
+  title        = {Industrial Gases and Cylinders},
+  year         = {2026},
+  url          = {https://www.lindedirect.com/},
+  note         = {Representative U.S. supplier class for oxygen and nitrous oxide; local quote required for exact pricing.},
 }

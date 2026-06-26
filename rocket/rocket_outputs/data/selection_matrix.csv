@@ -1,0 +1,6 @@
+case,safety_and_access,consumable_and_hardware_cost,storage_mass_volume,feed_control_predictability,development_risk,direct_heritage,performance,cooling_material_margin,selection_note,weighted_score
+N2O/IPA,4.0,4.5,4.0,2.5,2.5,5.0,3.0,3.5,Selected baseline: compact oxidizer storage and strongest VTVL analog; two-phase injector risk is the dominant development item.,3.65
+N2O/Ethanol,3.5,3.5,4.0,2.5,2.5,4.0,3.0,4.5,Backup: best N2O/alcohol literature and cooling conductivity; less convenient fuel procurement.,3.35
+GOX/Ethanol,3.0,2.0,1.5,4.5,4.5,3.0,4.5,4.5,Alternate if two-phase N2O is unacceptable; gas storage and oxygen hardware dominate cost/mass.,3.22
+GOX/IPA,3.0,2.5,1.5,4.5,4.5,2.0,5.0,3.5,Valid GOX alternate; slightly better computed Isp but less directly validated than GOX/ethanol.,3.18
+85% H2O2/IPA,1.5,1.5,5.0,2.5,2.0,1.0,3.0,2.0,"Near miss only: compact and similar Isp, but oxidizer access, decomposition, catalyst/ignition, and compatibility risks are severe.",2.3
