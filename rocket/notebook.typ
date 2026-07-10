@@ -496,7 +496,229 @@ N₂O wins as an architecture, not as a propellant. Per kilogram it is the most 
 
 The best alternatives are conditional. *GOX/ethanol* is the cleanest technical alternate if avoiding two-phase N₂O behavior is worth the tank/regulator mass and cost. *N₂O/ethanol* remains the fuel backup if the project chooses to align with N₂O/ethanol literature or needs ethanol's higher thermal conductivity for cooling margin. *GOX/IPA* is credible and has the best computed $I_"sp"$, but it is not the reference GOX fuel because the fuel choice does not solve the GOX storage/regulator problem and GOX/ethanol has stronger nearby ignition-validation evidence. *LOX/IPA* is the documented growth path: @sec-lox records the reopen condition and the flight heritage that supports it.
 
-= Injector Design
+= Injector Design <sec-injector>
+
+== Define the Problem
+
+Design the injector for the selected baseline propellant pair N₂O/IPA at the @sec-sizing-basis envelope. The injector must meter oxidizer and fuel into the chamber at the design O/F, atomize and mix them well enough for useful $c^*$ efficiency, support the throttle-demonstration requirement, and be fabricable in aluminum or stainless under the ≤\$5,000 prototype-hardware budget.
+
+The decision is not "maximize theoretical mixing only." It is "pick an archetype I can machine, clean for N₂O service, and calibrate with water-flow and N₂O cold-flow," accepting that flashing N₂O prevents a closed-form throttle map (@sec-n2o-risk, @waugh2018).
+
+== Design-Point Inputs
+
+These numbers are frozen from the propellant CEA optimum and the sizing envelope. Chamber diameter, $L^*$, and nozzle contour are *not* fixed yet; face packing that needs $D_c$ is labeled provisional.
+
+#block[
+#set text(size: 8.0pt)
+#table(
+  columns: (1.35fr, 0.9fr, 0.9fr, 2.0fr),
+  fill: tfill,
+  inset: 3.6pt,
+  [*Quantity*], [*200 N ref.*], [*400 N scale*], [*Source / note*],
+  [Chamber pressure $P_c$], [150 psia], [150 psia], [Sizing baseline @sec-sizing-basis.],
+  [O/F (mass)], [5.10], [5.10], [N₂O/IPA CEA optimum @cea_hopper_runs_2026.],
+  [$I_"sp,SL"$ (ideal CEA)], [207.0 s], [207.0 s], [Ambient-corrected, $P_e approx P_"amb"$ @cea_hopper_runs_2026.],
+  [$dot(m)_"tot"$], [0.0985 kg/s], [0.197 kg/s], [From $T/(I_"sp" g_0)$; scales with thrust at fixed $I_"sp"$.],
+  [$dot(m)_"ox"$ / $dot(m)_f$], [0.0824 / 0.0162 kg/s], [0.165 / 0.0323 kg/s], [O/F = 5.10; oxidizer is 83.6% of mass flow.],
+  [Throat diameter $D_t$], [13.89 mm], [19.6 mm], [CEA geometry at matched nozzle @cea_hopper_runs_2026.],
+  [IPA density (planning)], [786 kg/m³], [same], [≈20°C anhydrous IPA @crc2023.],
+  [N₂O liquid density (planning)], [750 kg/m³ warm / 900 cool], [same], [Warm-tank planning vs cooler saturated liquid @nist_n2o; hot tanks hold less.],
+  [Ox/fuel *volume* ratio (warm)], [≈5.35], [≈5.35], [Drives unlike-doublet momentum imbalance; see archetype trade.],
+)
+]
+
+#info-box("Still open (not injector decisions)")[
+Chamber diameter $D_c$, characteristic length $L^*$, contraction ratio, and nozzle contour are deferred. Where element layout needs a face diameter I use only a provisional band $A_c\/A_t approx 4$--$8$ (common pressure-fed practice band; final value belongs with chamber sizing) @huzel1992 @nasa_sp8089. Injector *orifice areas* do not require $D_c$; *pitch and ring layout* do.
+]
+
+== Injector Requirements
+
+#block[
+#set text(size: 8.0pt)
+#table(
+  columns: (1.15fr, 0.85fr, 2.5fr),
+  fill: tfill,
+  inset: 3.6pt,
+  [*Item*], [*Class*], [*Requirement / design rule*],
+  [Fuel metering], [Hard], [Size IPA with single-phase incompressible (SPI) orifice equation; freeze $C_d$ from water-flow, not handbook alone.],
+  [Oxidizer metering], [Hard], [Do not size N₂O with SPI alone. Bracket SPI (upper flow / lower area), approximate HEM (lower flow / higher area), and Dyer/NHNE design estimate; require empirical cold-flow map @dyer2007 @solomon2011 @waxman2013 @sec-n2o-risk.],
+  [Injector stiffness (fuel)], [Design rule], [Target fuel injector $Delta P \/ P_c approx 0.15$--$0.25$ at full thrust as a classical isolation/stiffness band @huzel1992.],
+  [Injector $Delta P$ (N₂O)], [Design rule], [Hold a planning $Delta P$ band, but do *not* assume $dot(m) prop sqrt(Delta P)$ after flashing; Snark found N₂O injector drop nearly independent of massflow @waugh2018.],
+  [Materials], [Hard], [Aluminum alloy or stainless steel primary wetted structure @tbl-hard-reqs.],
+  [Cleanliness], [Hard], [Oxidizer-wetted hardware free of hydrocarbon contamination; N₂O ullage decomposition risk if oil/grease present @karabeyoglu2008.],
+  [Pressure safety], [Hard], [Custom manifolds/face: burst FoS $gt.eq 4$ vs MEOP @tbl-hard-reqs.],
+  [Fabrication], [Hard], [First article machinable with common tools; avoid processes that force the whole injector into specialty diffusion-bond/platelet shops.],
+  [Throttle], [Test req.], [Support full and reduced thrust setpoints; primary throttle authority is the run valve, not a movable injector element, unless a later pintle growth path is chosen @waugh2018.],
+  [Interfaces], [Layout], [Separate ox/fuel manifolds with no interpropellant leak path; provisions for ignition and $P_c$ tap; do not block later TVC envelope @tbl-hard-reqs.],
+)
+]
+
+== Brainstorm: Injector Archetypes
+
+Taxonomy below follows standard liquid bipropellant injector families in Huzel and Huang and NASA SP-8089 (liquid rocket engine injectors monograph) @huzel1992 @nasa_sp8089. Pros/cons are scored for *this* N₂O/IPA pressure-fed hopper, not for a general LOX/RP booster.
+
+#block[
+#set text(size: 7.5pt)
+#table(
+  columns: (1.15fr, 1.5fr, 1.55fr, 1.55fr),
+  fill: tfill,
+  inset: 3.2pt,
+  [*Archetype*], [*Mechanism*], [*Why it can work here*], [*Why it may fail here*],
+  [Showerhead (non-impinging)], [Parallel axial jets; mixing by diffusion/shear.], [Simplest to drill; common hybrid N₂O practice for ox-only.], [Biprop mixing is weak without impingement; long $L^*$ or film risk @nasa_sp8089.],
+  [Unlike-doublet], [Fuel jet hits oxidizer jet; sheet then atomizes.], [Best *initial* mixing of the impinging family when stream momenta match @nasa_sp8089.], [O/F mass 5.1 and warm volume ratio ≈5.35 → severe momentum imbalance; reactive-stream separation risk @rosu2026.],
+  [Like-doublet (self-impinging)], [F–F and O–O pairs form fans; fans mix downstream.], [Each propellant atomizes on itself; tolerates unequal O/F; good stability reputation vs unlike @rosu2026 @nasa_sp8089.], [Needs enough face area and secondary mixing length; more holes than a pintle.],
+  [Triplet (e.g. F–O–F)], [Three jets meet; often fuel-rich outer.], [Can improve mixing vs doublet; used on some storables @nasa_sp8089.], [Three-way drill angles harder; still sensitive to ox jet quality when N₂O flashes.],
+  [Pentad / multi-orifice element], [Central jet + surrounding ring of jets.], [High mixing potential at large scale @nasa_sp8089.], [Pattern density and drill complexity high for a 200 N first article.],
+  [Splash-plate / cup], [Jets hit a surface, form sheet.], [Can work with coarse orifices.], [Face heat and erosion; less common for reusable small hoppers @nasa_sp8089.],
+  [Pintle (fixed)], [Central radial sheet impinges annular axial sheet.], [Deep throttle *heritage* (LMDE class); single element; good for unequal flows @dressler2006 @rosu2026.], [Concentric machining and skip-distance control; N₂O in annulus or slots still flashes @waxman2013.],
+  [Pintle (movable / throttling)], [Variable annular gap for deep throttle.], [Best throttle authority in the injector itself @dressler2006.], [Moving ox/fuel seal in a hot, N₂O-clean environment is not a first-article risk I will buy.],
+  [Coaxial shear], [Annular + core jets, no swirl.], [Simple axisymmetric machine work.], [Liquid–liquid shear mixing weaker than impingement at low $Delta P$ @nasa_sp8089.],
+  [Coaxial swirl], [Tangential entries form hollow cones.], [Fine atomization possible.], [Swirler passages clog-sensitive; two-phase N₂O swirl poorly predicted @nasa_sp8089.],
+  [Platelet / etched multilayer], [Photo-etched bonded stacks; arbitrary passages.], [Excellent feature control at aerospace budgets.], [Diffusion-bond/platelet process cost and lead time conflict with ≤\$5k first article @tbl-hard-reqs.],
+  [Hybrid face (e.g. ox showerhead + fuel impinging)], [Combine families on one face.], [Can tailor ox vs fuel.], [Two design problems and two calibration maps; complexity without proven need.],
+  [Gas–liquid coaxial (GOX note)], [Gaseous ox core/annulus with liquid fuel.], [Relevant only if GOX alternate is later chosen @nasa1984.], [Not the N₂O/IPA baseline; listed for completeness.],
+)
+]
+
+== Hard Screens
+
+#elim-box[Platelet / etched multilayer and any design that *requires* diffusion bonding or ultra-fine EDM as the only viable build path — process cost and lead time violate the first-article budget and material-access intent @tbl-hard-reqs @nasa_sp8089.]
+
+#elim-box[Movable throttling pintle as baseline — deep throttle heritage is real @dressler2006, but a moving oxidizer seal, actuation, and calibration stack on top of already non-analytic N₂O flow is the wrong first risk @waugh2018 @sec-n2o-risk.]
+
+#elim-box[Pure showerhead biprop as the sole mixer — SP-8089-class guidance treats non-impinging patterns as weaker mixers; I will not bet the first $c^*$ campaign on diffusion-only mixing at this $L^*$ uncertainty @nasa_sp8089.]
+
+#elim-box[Coaxial swirl and splash-plate as baseline — swirl passages plus two-phase N₂O are a prediction dead-end for a first map; splash plates add face heat/erosion without a compelling small-hopper precedent I can cite @nasa_sp8089 @waxman2013.]
+
+#elim-box[Pentad / high-order multi-orifice elements — unnecessary element complexity at 200 N when doublets or a fixed pintle already cover the trade space @nasa_sp8089.]
+
+Survivors for quantitative trade: *unlike-doublet*, *like-doublet*, *fixed pintle*, and *triplet (F–O–F)* as a complexity check. Hybrid faces and gas–liquid coaxial remain contingency notes only (GOX path), not N₂O baseline candidates.
+
+== Quantitative Flow Models
+
+Shared orifice math used for every survivor. Units SI in calculation; tables in engineering units.
+
+*Fuel (IPA) — SPI.* Single-phase incompressible orifice flow @huzel1992:
+
+$ dot(m)_f = C_(d,f) A_f sqrt(2 rho_f Delta P_f) $
+
+Planning $C_(d,f) = 0.70$ until water-flow; $rho_f = 786$ kg/m³; target $Delta P_f = 0.20 P_c = 30$ psia at 200 N full thrust (inside the 15--25% band) @huzel1992.
+
+*Oxidizer (N₂O) — SPI / HEM / Dyer bracket.* SPI is only an upper mass-flow bound for a fixed area when the liquid can flash @dyer2007 @waxman2013. Approximate HEM here is a *planning lower bound*: $dot(m)_"HEM" approx 0.35 thin dot(m)_"SPI"$ at the same $A$ and $Delta P$, an engineering factor in the band where short-orifice saturated N₂O data sit between SPI and deep equilibrium limits in Waxman-class work — *not* a first-principles HEM integration @waxman2013. Dyer/NHNE design estimate @dyer2007 @solomon2011:
+
+$ dot(m)_"Dyer" = (dot(m)_"SPI" + k thin dot(m)_"HEM") / (1 + k) $
+
+with planning $k = 1$ (saturated, short-orifice mid blend). Required *area* for a target $dot(m)$ is therefore largest under HEM, intermediate under Dyer, and smallest under SPI (SPI under-sizes the hole if flashing reduces discharge).
+
+#figure(
+  image("rocket_outputs/figures/injector_n2o_area_model_brackets.png", width: 92%),
+  caption: [Required total N₂O orifice area vs injector $Delta P\/P_c$ at 200 N, warm-tank density 750 kg/m³, $C_d = 0.65$. SPI under-sizes area if flashing; HEM approx over-sizes; Dyer $k=1$ is the planning design curve @cea_hopper_runs_2026 @waxman2013.],
+) <fig-injector-n2o-brackets>
+
+#figure(
+  image("rocket_outputs/figures/injector_fuel_orifice_diameter_vs_count.png", width: 88%),
+  caption: [IPA SPI orifice diameter vs hole count at 200 N, $Delta P = 0.20 P_c$, $C_d = 0.70$. Project shop floor marks 0.5 mm as a clogging/practical limit (assumption, not a standard).],
+) <fig-injector-fuel-orifices>
+
+At the 200 N, $Delta P = 0.20 P_c$ planning point the generated tables give:
+
+#block[
+#set text(size: 8.0pt)
+#table(
+  columns: (1.4fr, 1.1fr, 1.2fr, 1.4fr),
+  fill: tfill,
+  inset: 3.5pt,
+  [*Stream*], [*$dot(m)$*], [*Model*], [*Required total $A$*],
+  [IPA], [0.0162 kg/s], [SPI], [1.28 mm²],
+  [N₂O], [0.0824 kg/s], [SPI (min $A$ if no flash)], [≈6.3 mm² class],
+  [N₂O], [0.0824 kg/s], [Dyer $k=1$ design], [10.7 mm²],
+  [N₂O], [0.0824 kg/s], [HEM approx (max $A$)], [≈18 mm² class],
+)
+]
+
+Exact CSV rows live in `rocket_outputs/data/injector_orifice_sizing_*.csv` @injector_assets_2026. 400 N at the same $P_c$ and $Delta P$ fraction doubles areas (diameters scale $sqrt(2)$).
+
+*Impinging geometry parameters (when an impinging survivor wins).* NASA SP-8089 and subsequent practice commonly use ~60° included impingement angle for like- and unlike-doublets @nasa_sp8089 @sweeney2016. $L\/d$ of a few orifice diameters is a usual short-tube starting point; I adopt a planning $L\/d approx 3$ pending water-flow $C_d$ @huzel1992. Unlike-doublet design also wants comparable jet momenta; with volume ratio ≈5.35 that condition is badly violated unless the pattern is heavily ox-sided — a structural reason unlike-doublet scores poorly below @nasa_sp8089.
+
+== Analyze Survivors
+
+#figure(
+  image("rocket_outputs/figures/injector_archetype_trade_scores.png", width: 88%),
+  caption: [Weighted scores for the four hard-screen survivors. Weights: N₂O two-phase tolerance 0.25, fab simplicity 0.20, mixing 0.15, unequal-O/F suitability 0.15, throttle fit 0.15, stability heritage 0.10 @injector_assets_2026.],
+) <fig-injector-trade>
+
+Weights intentionally favor N₂O honesty and shop reality over pure mixing bragging rights — matching the propellant section's risk posture.
+
+=== Unlike-doublet
+
+Unlike-doublets give strong *initial* mixing when fuel and oxidizer jet momenta are comparable @nasa_sp8089. Here they are not: warm-tank volume ratio ox/fuel ≈ 5.35 at O/F = 5.10. Reviews note asymmetric sprays and reactive-stream separation risk when properties and momenta differ strongly @rosu2026. Flashing N₂O makes the oxidizer jet even less like a steady liquid spear @waxman2013. Fabrication of angled pairs is familiar, but I would be calibrating a pattern that is already on the wrong side of the momentum-ratio rule. *Trade score: lowest of the four survivors.*
+
+=== Triplet (F–O–F)
+
+Triplets can improve mixing relative to a single doublet and appear in storable-engine practice @nasa_sp8089. They inherit the same unequal-jet and N₂O flash problems as unlike elements, with harder three-axis drill geometry. Not worth the complexity on a 200 N first face. *Eliminated as baseline; not carried as backup.*
+
+=== Fixed pintle
+
+Fixed pintles impinge a radial sheet with an annular sheet and have deep throttle *heritage* (LM descent engine class; later LOX/RP engines) @dressler2006 @rosu2026. They handle unequal propellant flows more gracefully than unlike-doublets and put throttle authority in geometry if the gap is varied — but I already screened *movable* pintles. A *fixed* pintle still helps throttle by keeping a stable spray structure while the *valve* meters, which matches Snark's valve-command-linear $P_c$ observation @waugh2018. Downsides: concentricity, skip distance, and putting flashing N₂O through an annulus or slots is still two-phase orifice physics @waxman2013. Machining is lathe-centered rather than multi-hole drill jigs. *Strong alternate, especially if early hot-fires show face-pattern mixing or heat problems.*
+
+=== Like-doublet
+
+Like-doublets atomize each propellant against itself (F–F and O–O), then mix the fans in the chamber. Literature treats them as more forgiving for combustion stability and for avoiding reactive impingement issues than unlike-doublets @nasa_sp8089 @rosu2026. Critically, they *do not require* matched F and O jet momenta: I size the ox pairs for the Dyer N₂O area and the fuel pairs for SPI IPA area separately. Drill count is higher than a pintle but each hole is a straight (angled) gun-drill problem I can jig. Throttle remains valve-side, which is what the N₂O evidence supports @waugh2018. *Highest weighted score in @fig-injector-trade.*
+
+== Select Best Solution
+
+#finalist-box[*Baseline injector archetype: like-doublet impinging (self-impinging F–F and O–O pairs).* Chosen because it separates atomization from interpropellant momentum matching, fits O/F = 5.1 volume asymmetry, stays within Al/SS drill-and-jig fabrication, and keeps throttle authority in the run valve where Snark already showed nearly linear $P_c$ command @nasa_sp8089 @waugh2018 @rosu2026.]
+
+*Ranked backups.* (1) *Fixed pintle* if like-doublet face heat, packing, or $c^*$ efficiency disappoint after cold-flow/hot-fire — throttle-structure heritage is the reopen reason @dressler2006. (2) *Unlike-doublet* only if cold-flow shows I can force acceptable ox/fuel momentum by extreme area splitting *and* flash-boiling does not destroy the sheet — unlikely, kept as literature comparison only.
+
+GOX alternate note: if the program ever pivots to GOX/alcohol, gas–liquid coaxial or unlike elements become more attractive because the oxidizer is single-phase gas @nasa1984; that is a different injector, not a bolt-in of the N₂O face.
+
+== Detailed Specifications of the Chosen Archetype
+
+All dimensions below are *preliminary design values* for the 200 N, $P_c = 150$ psia reference. They come from SPI fuel + Dyer ($k=1$) N₂O area budgets at $Delta P = 0.20 P_c$ and must be revised after water-flow $C_d$ and N₂O cold-flow @injector_assets_2026.
+
+#block[
+#set text(size: 8.0pt)
+#table(
+  columns: (1.45fr, 1.55fr, 1.7fr),
+  fill: tfill,
+  inset: 3.5pt,
+  [*Item*], [*Preliminary value*], [*Basis*],
+  [Pattern], [Like-doublet; separate F–F and O–O pairs], [Selection above @nasa_sp8089.],
+  [Included impingement angle], [60°], [Common doublet practice @nasa_sp8089 @sweeney2016.],
+  [Fuel pairs / orifices], [2 pairs / 4 holes], [SPI area 1.28 mm² total → $d_f approx 0.64$ mm each @injector_assets_2026.],
+  [Ox pairs / orifices], [6 pairs / 12 holes], [Dyer area 10.7 mm² total → $d_o approx 1.06$ mm each @injector_assets_2026.],
+  [Orifice $L\/d$ (both)], [≈3], [Short-tube planning; set final from measured $C_d$ @huzel1992.],
+  [Planning $C_d$], [Fuel 0.70; ox 0.65], [Until water-flow / cold-flow; ox lower pending flash.],
+  [Target $Delta P$ at full thrust], [30 psia (0.20 $P_c$) each side as *manifold-to-chamber* planning drop], [Fuel stiffness band @huzel1992; N₂O drop may not track $dot(m)^2$ @waugh2018.],
+  [Face layout], [Alternating rings or sectors of O–O and F–F pairs; pitch $gt.eq 3d$ local (project packing assumption until $D_c$ fixed)], [Provisional with $A_c\/A_t$ band; finalize with chamber diameter.],
+  [Manifolds], [Separate ox and fuel ring manifolds behind the face; no shared cavity], [Interpropellant leak prevention @nasa_sp8089.],
+  [Inlet ports], [AN/JIC or equivalent on manifold block], [Hard connector rule @tbl-hard-reqs.],
+  [Materials], [SS316 or Al 6061-T6 face/manifolds per compatibility and weld/braze plan], [Hard material rule; final pick with structural section.],
+  [Seals], [Oxidizer-compatible elastomers or metal seals; no hydrocarbon grease on ox side], [@karabeyoglu2008.],
+  [Ignition provision], [Boss or film-cooled torch/spark port on chamber, not through a propellant orifice], [Keep injector holes for propellants only.],
+  [Instrumentation], [$P_c$ tap on chamber; optional manifold $P_"ox"$, $P_f$ taps], [Required for $c^*$ and $Delta P$ data.],
+  [Throttle concept], [Fixed orifices; primary throttle = run valves; build empirical map vs tank $T,P$], [@waugh2018 @sec-n2o-risk.],
+  [400 N scale], [Areas $times 2$ at same $P_c$ and $Delta P$ fraction; or raise $P_c$ later], [Thrust scale at fixed $I_"sp"$],
+)
+]
+
+#warn-box("N₂O sizing honesty")[
+If cold-flow shows discharge closer to HEM than Dyer, ox holes must grow (or $Delta P$ rise). If closer to SPI, holes can shrink. Do not laser-cut the face until at least one N₂O cold-flow campaign on a prototype orifice plate has bounded $C_d$ effective @waxman2013 @solomon2011.
+]
+
+*Shop notes (project assumptions, not standards).* Prefer gun-drilled or reamed holes over punched sheet for $C_d$ repeatability; deburr exits; keep entrance edge consistent across the set; drill-angle fixture tolerance goal ±1° on impingement half-angle until data say otherwise. Minimum finished fuel diameter stays above ~0.5 mm to limit clogging — the 0.64 mm planning size clears that floor.
+
+*Open items before freezing hardware.* (1) Water-flow $C_d$ vs $Re$ for fuel and for water-as-proxy ox geometry. (2) N₂O cold-flow $dot(m)(T_"tank", P_"tank", "valve")$ on a spare face. (3) Chamber $D_c$ so pitch/rings lock. (4) Film-coolant ring decision with Cooling section. (5) Structural FEA of face under MEOP.
+
+== Verification and Calibration Plan
+
+1. *Water-flow (fuel circuit, and ox geometry with water).* Measure $C_d$ for each orifice class; compare to 0.70/0.65 planning values; reject faces with >10% element-to-element scatter (project threshold).
+2. *N₂O cold-flow.* Map mass flow vs tank temperature/pressure and valve command; overlay SPI / Dyer / HEM predictions; update orifice diameters if outside ±15% of target $dot(m)$ at the design tank state (project threshold).
+3. *Hot-fire matrix.* Reuse the propellant-section budget (~ten 200 N, 60 s-class fires): record $c^*$ efficiency vs ideal 1590 m/s, O/F from tank weigh-back, chug/buzz notes, and face condition @waugh2018 @cea_hopper_runs_2026.
+4. *Pass criteria (first article).* Repeatable ignition; no hard start that damages hardware; $c^*$ efficiency high enough for hover math with the 1.2 liftoff margin after real $I_"sp"$; no face burn-through; throttle steps between full and reduced setpoints without divergence @tbl-hard-reqs.
+
+Until those data exist, the like-doublet geometry above is a *design baseline*, not a flight-certified drawing.
 
 = Feed System Design
 
