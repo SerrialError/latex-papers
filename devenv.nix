@@ -3,7 +3,7 @@
 {
   # https://devenv.sh/packages/
   packages = [
-    pkgs.texlive.combined.scheme-full
+    pkgs.texliveFull
     pkgs.typst
     pkgs.gnumake
   ];
