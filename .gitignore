@@ -10,3 +10,10 @@
 *.synctex.gz
 *.bbl
 *.blg
+
+# devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
