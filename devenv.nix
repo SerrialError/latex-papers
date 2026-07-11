@@ -1,6 +1,9 @@
 { pkgs, ... }:
 
 {
+  # Not a trusted Nix user, so let devenv skip auto-managing its Cachix cache.
+  cachix.enable = false;
+
   # https://devenv.sh/packages/
   packages = [
     pkgs.texliveFull
