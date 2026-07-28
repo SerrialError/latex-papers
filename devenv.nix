@@ -8,6 +8,7 @@
   packages = [
     pkgs.texliveFull
     pkgs.typst
+    pkgs.typstyle
     pkgs.gnumake
   ];
 
