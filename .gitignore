@@ -11,6 +11,12 @@
 *.bbl
 *.blg
 
+# Python
+__pycache__/
+
+# Stray output dir: a script run from the wrong cwd writes rocket/rocket/
+rocket/rocket/
+
 # devenv
 .devenv*
 devenv.local.nix
