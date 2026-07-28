@@ -119,7 +119,7 @@ The requirements below are limited to items that must be true before the design 
       [Budget], [Hard], [Prototype propulsion hardware target: ≤ \$5,000 excluding propellant],
       [Architecture], [Hard], [No turbopumps.],
       [Cryogenics], [Hard], [No cryogenic propellant storage.],
-      [Hazard class and Legality], [Hard], [Nothing specifically potentially hazardous, corrosive, toxic, or illegal.],
+      [Hazard class and Legality], [Hard], [No propellant or working fluid that requires specialized toxicity handling, hazmat licensing, or an exotic-material compatibility program (hydrazine-family, RFNA-class, high-test-peroxide-class). Ordinary industrial hazards — oxidizers, flammable liquids, compressed gases — are accepted with standard controls.],
       [Material access], [Hard], [Primary wetted structural materials shall be readily obtainable aluminum alloy or stainless steel unless a later section gives a specific compatibility basis.],
       [Fluid connectors], [Hard], [Use pressure-rated commercial connector families only: AN/MS, CGA, Swagelok-compatible compression fittings, or equivalent documented hardware.],
       [Pressure safety], [Hard], [Pressure-wetted custom parts shall use burst factor of safety $gt.eq 4$ against MEOP. Purchased cylinders, valves, regulators, and fittings shall be used only within documented manufacturer ratings.],
@@ -159,7 +159,7 @@ The brackets in @tbl-sizing-vars have to be fixed early enough that mass, cost, 
 These numbers are not a claim that a 17--34 kg vehicle already closes, that 150 psia is optimal for every oxidizer, or that any propellant family is preferred. They are the analysis envelope I will use for every candidate equally. If a later architecture cannot close mass or feed at these brackets, that is evidence against that architecture — not a reason to rewrite the brackets to favor it.
 ]
 
-Two small VTVL programs publish enough numbers to use as *scale* anchors. Both happen to fly N₂O/IPA; I record that fact for honesty and use only their thrust class, chamber-pressure regime, and liftoff loading here. Propellant selection is a separate decision later. Larger LOX/alcohol hoppers (Masten, Armadillo) are one to two orders of magnitude heavier and are recorded only when cryogenics are reconsidered @sec-lox.
+Two small VTVL programs publish enough numbers to use as *scale* anchors. Both happen to fly N₂O/IPA; I record that fact for honesty and use only their thrust class, chamber-pressure regime, and liftoff loading here. Propellant selection is a separate decision later. Larger LOX/alcohol hoppers (Masten, Armadillo) are one to two orders of magnitude heavier and are recorded only in the cryogenic reconsideration (@sec-lox).
 
 #block[
 #set text(size: 8.2pt)
@@ -173,7 +173,7 @@ Two small VTVL programs publish enough numbers to use as *scale* anchors. Both h
 )
 ]
 
-*Full-thrust liftoff margin, $gt.eq 1.2$.* Hover is exactly $T\/W = 1$, so every point above 1 is vertical control authority. At 1.2 the peak upward acceleration is about $0.2 g_0 approx 2$ m/s², which arrests a 2 m/s sink rate in about one second and one metre of altitude; at 1.05 the same arrest takes about four seconds and four metres — not useful control authority on a short-hop vehicle. The margin also has to absorb the difference between ideal and delivered thrust: published small bipropellant thrusters often realize on the order of 90--95% of ideal $c^*$ (Snark measured 1487 m/s against an ideal near 1590 m/s at its operating point, ≈94%) @waugh2018, and any pressure-fed feed system can sag thrust at fixed valve command as tank conditions change. The upper side is bounded by throttle depth on descent: once $m_0$ is known, descent requires $T_"min" < m_f g_0$, so a higher liftoff margin forces a deeper minimum throttle. With a flight propellant fraction near 25%, a 1.2 margin already implies throttling to roughly 60% of full thrust; a 2.0 margin would demand roughly 40%. That trade is propellant-agnostic at this level; how hard deep throttle is depends on the feed architecture and is evaluated later. Colibri flies near a maximum $T\/W$ of about 1.27 @gsp_colibri @kistler2024, so 1.2 is a floor with a flying precedent just above it. I see no reason to buy much beyond ≈1.5 for a first article.
+*Full-thrust liftoff margin, $gt.eq 1.2$.* Hover is exactly $T\/W = 1$, so every point above 1 is vertical control authority. At 1.2 the peak upward acceleration is about $0.2 g_0 approx 2$ m/s², which arrests a 2 m/s sink rate in about one second and one meter of altitude; at 1.05 the same arrest takes about four seconds and four meters — not useful control authority on a short-hop vehicle. The margin also has to absorb the difference between ideal and delivered thrust: published small bipropellant thrusters often realize on the order of 90--95% of ideal $c^*$ (Snark measured 1487 m/s against an ideal near 1590 m/s at its operating point, ≈94%) @waugh2018, and any pressure-fed feed system can sag thrust at fixed valve command as tank conditions change. The upper side is bounded by throttle depth on descent: once $m_0$ is known, descent requires $T_"min" < m_f g_0$, so a higher liftoff margin forces a deeper minimum throttle. With a flight propellant fraction near 25%, a 1.2 margin already implies throttling to roughly 60% of full thrust; a 2.0 margin would demand roughly 40%. That trade is propellant-agnostic at this level; how hard deep throttle is depends on the feed architecture and is evaluated later. Colibri flies near a maximum $T\/W$ of about 1.27 @gsp_colibri @kistler2024, so 1.2 is a floor with a flying precedent just above it. I see no reason to buy much beyond ≈1.5 for a first article.
 
 *Nominal thrust, 200--400 N.* With the margin rule fixed, thrust follows from the vehicle class I am willing to build. The mission is a *minimal* controlled hop under a ≤\$5,000 prototype-hardware budget with no turbopumps and a small-team build/test loop. That points to a wet mass in the tens of kilograms, not Colibri's 100 kg class and not a multi-kN booster. Inverting $T_"max" / (m_0 g_0) = 1.2$ maps 200--400 N onto a wet-mass allowance of about 17--34 kg. Colibri's published loading of ≈12.5 N/kg maps the same thrust bracket onto ≈16--32 kg, and Snark sits mid-bracket at 300 N for the same mission type @gsp_colibri @waugh2018. I am *not* using a particular oxidizer bottle or cylinder map to justify the bracket: storage mass depends on the propellant decision and will be checked after that decision. The 200 N end is the static-fire and cost floor; the 400 N end is the stretch corner for mass and cost scaling. The final flight thrust still converges in the engine-sizing section once dry mass and propellant load are known.
 
@@ -191,13 +191,16 @@ Select a storable oxidizer/fuel pair for a small pressure-fed VTVL hopper. The s
 
 The analysis envelope is already fixed in @sec-sizing-basis (200--400 N, $T\/W gt.eq 1.2$, 30--60 s burns, 150 psia baseline $P_c$ with a 200 psia upgrade case). Every candidate below is scored against that same envelope. I am not allowed to retune thrust or chamber pressure mid-trade to rescue a propellant family that fails storage, cost, or feed physics at those brackets.
 
-Categories of analysis:
-- Cost
+Categories of analysis (these become the weighted criteria in @tbl-selection-matrix):
+- Safety and access
+- Consumable and hardware cost
 - Storage mass and volume
-- Stability / predictability
+- Feed control and predictability
 - Development risk
+- Ignition and start risk
+- Direct heritage
 - Performance
-- Complexity
+- Cooling / material margin
 
 == Brainstorm Solutions
 
@@ -306,7 +309,7 @@ Pricing below is a planning model, not a purchase instruction. Industrial gas pr
 )
 ]
 
-The GOX volume in the table assumes storage near 2200 psia and 293 K using the ideal-gas law; the N₂O volume assumes saturated-liquid storage near room temperature with a 20% ullage/design margin. The 750 kg/m³ N₂O density is deliberately a warm-tank planning value: saturated-liquid density is roughly 745--790 kg/m³ over 20--25°C and falls steeply toward the critical point, so a hot Las Vegas tank holds less than a cool one @nist_n2o. These are comparison numbers, not final pressure-vessel dimensions; candidate pressure vessels still need manufacturer ratings, valve details, fill rules, and compatibility checks @cost_model_2026.
+The GOX volume in the table assumes storage at 2200 psia and 293 K using the ideal-gas law plus a 5% design margin; the vessel map below uses the 2265 psia DOT service rating of the actual cylinders, and that 65 psi difference sits inside the margin. The N₂O volume assumes saturated-liquid storage near room temperature with a 20% ullage/design margin. The 750 kg/m³ N₂O density is deliberately a warm-tank planning value: saturated-liquid density is roughly 745--790 kg/m³ over 20--25°C and falls steeply toward the critical point, so a hot Las Vegas tank holds less than a cool one @nist_n2o. These are comparison numbers, not final pressure-vessel dimensions; candidate pressure vessels still need manufacturer ratings, valve details, fill rules, and compatibility checks @cost_model_2026.
 
 The 400 N, 60 s case is the stretch corner of the requirement, not the requirement, so it must not size the architecture by itself; the honest way is to map every corner of the thrust/burn-time envelope onto real, priced vessels. Stored GOX assumes blowdown from 2265 psia service pressure to a 500 psia regulator floor, leaving about 78% of the fill usable; the N₂O planning load is 1.25× the burned mass to cover retained vapor, pressure sag near depletion, and fill tolerance @cost_model_2026.
 
@@ -325,6 +328,24 @@ The 400 N, 60 s case is the stretch corner of the requirement, not the requireme
 ]
 
 Cylinder and bottle picks, prices, and tares are current public listings @gascylindersource_o2_125 @gascylindersource_oxygen250 @airgas_oxygen250 @nitrousoutlet_bottles. Read this table two ways. As ground-support hardware, GOX storage is cheap at every requirement point: the 30 s floor case is one \$143.50 welding cylinder, and only the full stretch case forces the 250-class cylinder. As onboard hardware, the same column is disqualifying: the mapped steel cylinders carry roughly 26--49 kg of steel to deliver 3.3--6.6 kg of usable oxygen, about 7 kg of vessel per kilogram of oxidizer against about 1.5 kg/kg for the nitrous bottles. Aluminum and composite oxygen cylinders improve the ratio but remain far from the bottle numbers and cost more, and breathing-air composite cylinders (SCBA, paintball) are not rated for oxygen service and are not a shortcut.
+
+All of the propellant loads above use ideal CEA $I_"sp"$, and no real thruster delivers it: Snark measured about 94% of ideal $c^*$ at its operating point @waugh2018. Carrying a planning 92% $c^*$ efficiency and 97% $C_F$ efficiency — about 89% of ideal $I_"sp"$ — raises every load by about 12%:
+
+#block[
+#set text(size: 8.0pt)
+#table(
+  columns: (1.2fr, 0.85fr, 0.95fr, 1.15fr, 1.15fr),
+  fill: tfill,
+  inset: 3.5pt,
+  [*Case*], [*Ideal $I_"sp,SL"$*], [*Delivered (plan)*], [*200 N, 60 s load*], [*400 N, 60 s load*],
+  [N₂O / IPA], [207.0 s], [184.7 s], [5.91 → 6.62 kg], [11.82 → 13.25 kg],
+  [N₂O / Ethanol], [204.8 s], [182.8 s], [5.97 → 6.69 kg], [11.95 → 13.39 kg],
+  [GOX / IPA], [230.1 s], [205.3 s], [5.32 → 5.96 kg], [10.64 → 11.92 kg],
+  [GOX / Ethanol], [225.6 s], [201.3 s], [5.42 → 6.08 kg], [10.85 → 12.16 kg],
+)
+]
+
+The 30 s cases keep their mapped vessels with margin. Every 60 s corner lands 1--2% over its vessel instead: the delivered-basis N₂O loads become 6.92 kg against the 15 lb bottle's 6.80 kg capacity and 13.85 kg against 13.61 kg for the bottle pair, and the GOX 60 s fills run about 0.6% over the usable blowdown fraction. That overshoot is smaller than the 1.25× N₂O loading allowance it overlaps — the allowance already double-books part of the same shortfall — so the vessel map stands, but the ten-fire calibration budget scales with the same 12%, to roughly \$750--\$1,350.
 
 The vessel is not where the architectures diverge on cost, so the next table itemizes the full oxidizer-side feed system at the 200 N, 60 s reference. Allowance rows are marked as such; everything else is a current public listing.
 
@@ -399,6 +420,8 @@ This is the most important risk record in the propellant decision, because it de
 
 That temperature dependence is the N₂O-specific chamber-pressure ceiling that @sec-sizing-basis deferred. Throttle-valve drop, injector drop, and chamber pressure must all fit under the *coldest credible end-of-burn tank pressure*, not under the 760 psia of a 20°C full tank. Holding ≈20% of $P_c$ for injector stiffness @huzel1992, a 150 psia chamber asks for ≈180 psia at the injector inlet and still leaves roughly 270 psi of valve authority on a 0°C morning before self-cooling sag; a 300 psia chamber asks for ≈360 psia and leaves under 100 psi on the same morning. The 150 psia baseline therefore fits self-pressurized N₂O with usable throttle margin; anything much above the 200 psia upgrade case needs a warm-tank-only envelope or oxidizer supercharge.
 
+The sag itself can be bounded with an equilibrium energy balance. Draining the 200 N, 60 s load of 4.94 kg opens about 6.3 L of ullage, and refilling it with saturated vapor near 160 kg/m³ evaporates roughly 1.0 kg of liquid at ≈170 kJ/kg of latent heat @nist_n2o. If only the remaining liquid supplies that heat (≈3.7 kg average at $c_p approx 3$ kJ/kg·K), the tank cools about 15 K over the burn; letting an 8 kg aluminum bottle share the load softens that to about 9 K. From a 20°C start the end-of-burn saturation pressure lands near 520--600 psia — a sag of roughly 160--240 psi, about 3--4 psi/s, still ≈340 psi above the 180 psia injector-inlet ask. From a 0°C start the end state is ≈370--410 psia and the remaining valve authority shrinks to ≈190--230 psi. These are equilibrium bounds and real tanks lag them @zimmerman2013_tank, so the number to trust is the cold-flow measurement — but the bound already says the 150 psia baseline survives the coldest credible morning with authority to spare.
+
 #warn-box("Las Vegas design-basis implication")[
 A N₂O tank in direct summer sun can approach or exceed the 36.4°C critical temperature. The baseline control map should be built around measured tank temperature and pressure, and the pressure-vessel MEOP check should use the highest credible tank temperature, not just nominal room temperature. Testing in shade or morning conditions is not a convenience; it is part of keeping the feed model inside the calibrated regime.
 ]
@@ -428,6 +451,8 @@ The AEL Snark work is the most relevant single data point because it is a 300 N 
 The practical consequence is concrete. I cannot pre-compute a valve schedule, an injector pressure-drop margin, or a throttle map for the N₂O engine and trust them. I can only bracket them with SPI/HEM/NHNE and then buy the real answer with a calibration matrix of hot fires across tank temperatures and throttle setpoints. That campaign is a real budget line — about \$670--\$1,200 of propellant for ten 200 N, 60 s fires at the sourced prices — and it is the main technical reason not to over-score N₂O just because its tanks are compact.
 
 N₂O also carries a hazard GOX does not: it is a monopropellant-capable oxidizer whose ullage can decompose energetically if an ignition source reaches it, and hydrocarbon contamination catalyzes that decomposition @karabeyoglu2008. The mitigation overlaps with GOX practice — oxidizer-clean plumbing, no oil or grease, care with adiabatic compression — so choosing N₂O does not buy exemption from cleanliness discipline. The fair counterpoint from the same work is that N₂O decomposition kinetics are roughly six orders of magnitude slower than H₂O₂ at comparable conditions, which is part of why it remains the standard amateur oxidizer @karabeyoglu2008.
+
+Ignition is the start-transient face of the same hazard. N₂O releases its oxygen only after dissociation, so the pair does not light from a bare spark the way GOX/alcohol can; a dedicated igniter must be proven lit before the main oxidizer valve opens. A slow start lets unburned propellant accumulate, and a hard start feeding a monopropellant-capable ullage is exactly the energetic event class documented for N₂O systems @karabeyoglu2008. GOX/ethanol, by contrast, has a published ignition characterization near this chamber pressure @nasa1984. That difference is scored as its own criterion in the selection matrix below, and the igniter itself is scoped in @sec-ignition-design.
 
 === GOX / Ethanol
 #figure(
@@ -476,6 +501,14 @@ On pure CEA performance, higher $P_c$ does *not* close the GOX-to-N₂O gap. At 
 
 On feed and storage physics, higher $P_c$ makes regulated GOX *worse*, not better, for a pressure-fed first article. Injector inlet pressure still needs ≈1.2 $P_c$ under the Huzel stiffness allowance @huzel1992, so a 300 psia chamber asks for ≈360 psia at the injector before valve and line losses. That raises the regulator delivery setpoint and therefore the usable blowdown floor on a fixed 2265 psia service cylinder: less of the fill is usable, so stored mass and cylinder class grow for the same burned oxygen. N₂O has its own high-$P_c$ problem (cold-tank saturation pressure and valve authority), documented in @sec-n2o-risk, but that is a reason to keep $P_c$ modest for a self-pressurized oxidizer — not a reason to switch to GOX. The conclusion feeds the selection below rather than assuming it: $P_c$ steers thruster and tank *sizing*, not the propellant architecture decision. Higher chamber pressure does not reverse the GOX storage/regulator penalty, so it should not be used as a reason to pick GOX over a liquid oxidizer at this vehicle class.
 
+== Nozzle Behavior at Throttle <sec-throttle-nozzle>
+
+Every comparison above uses a nozzle matched at full thrust, but the hover mission lives at throttled setpoints. At fixed geometry and fixed mixture ratio, chamber pressure falls roughly with mass flow and exit pressure falls with it, $P_e \/ P_"amb" approx dot(m) \/ dot(m)_"full"$ for a sea-level-matched design, so every throttled setpoint runs the nozzle overexpanded.
+
+For the N₂O/IPA baseline the penalty is modest but permanent: about 199 s at an 80% thrust setpoint (−8 s from the matched 207.0 s) and about 188 s near the ≈62% landing throttle implied by the 1.2 liftoff margin and a ≈25% propellant fraction (−19 s). Across the hover band from ≈83% down to ≈62% thrust the delivered band is roughly 189--201 s — a nearly flat 5--7% flight penalty that stacks on top of the delivered-$I_"sp"$ knockdown carried in @sec-sourcing.
+
+Flow separation is not close at those depths. Summerfield-class criteria put separation onset near $P_e approx 0.35$--$0.40 thin P_"amb"$ @huzel1992, which this nozzle does not cross until roughly 25--30% thrust. A Snark-class 20% throttle floor @waugh2018 would sit below that line and would need an explicit separation check or a truncated nozzle; the throttle-demonstration requirement in @tbl-hard-reqs does not. None of this moves the propellant choice — every candidate carries the same overexpansion physics — but the flight-performance budget must use throttled $I_"sp"$, not the matched-point number.
+
 == Cryogenic Reconsideration: LOX <sec-lox>
 
 The no-cryogenics rule was written from fear of complexity, so before selecting I am testing it against numbers instead of instinct — especially since both surviving oxidizers carry a structural penalty: GOX pays in tank tare, regulator hardware, and storage volume; N₂O pays in two-phase calibration and thermal sensitivity. LOX removes both at once. It is a dense, single-phase liquid at the injector (about 1,141 kg/m³ at its normal boiling point @nist_oxygen), it stores at low dewar pressure instead of as 2265 psia gas, and it is the cheapest oxidizer I can document: FAR sells 230 L, roughly 262 kg, for \$540 — about \$2/kg — and a trade source reports \$200-class quotes for a 180 L dewar @far_propellants @hvo_oxygen_cost.
@@ -486,11 +519,56 @@ The bill on the other side is operational, and it is real: cryo-rated valves and
 
 The screen therefore stands for the first article, but as a recorded decision with a reopen condition rather than a closed door: if the N₂O calibration campaign runs past roughly 15--20 hot fires without converging, or the field thermal envelope cannot be held, LOX/IPA is the rational pivot with the most direct heritage, and the no-cryogenics requirement would be formally waived at that point.
 
+== Flight Mass Closure First Cut <sec-mass-closure>
+
+The 1.2 liftoff margin turns each thrust bracket into a wet-mass cap: 17.0 kg at 200 N and 34.0 kg at 400 N. Subtracting the mapped N₂O storage from @sec-sourcing (loaded bottle, tare plus 1.25× propellant load) and the fuel load leaves the budget for everything else — engine, structure, fuel tank and pressurant, landing gear, avionics — which I estimate at 6--9 kg for this vehicle class (project estimate, not a weighed bill of materials):
+
+#block[
+#set text(size: 8.0pt)
+#table(
+  columns: (1.0fr, 1.3fr, 0.8fr, 1.15fr, 1.35fr),
+  fill: tfill,
+  inset: 3.5pt,
+  [*Case*], [*Loaded N₂O bottle*], [*Fuel*], [*Left of cap*], [*Verdict vs 6--9 kg*],
+  [200 N, 30 s], [9.4 kg (10 lb)], [0.5 kg], [7.1 kg], [Marginal],
+  [200 N, 60 s], [14.2 kg (15 lb)], [1.0 kg], [1.8 kg], [Does not close],
+  [400 N, 30 s], [14.2 kg (15 lb)], [1.0 kg], [18.8 kg], [Closes with margin],
+  [400 N, 60 s], [28.5 kg (2 × 15 lb)], [1.9 kg], [3.6 kg], [Does not close],
+)
+]
+
+The conclusion is that the 60 s stretch burn is a *ground-demonstration* load, not a flight load: no corner of the envelope lifts a full 60 s propellant load and a realistic dry mass at $T\/W = 1.2$. The flight article is either a 200 N vehicle flying ≈30 s partial loads with thin margin, or a 400 N-class vehicle — the same convergence AEL reached at 300 N for the same mission @waugh2018. The delivered-$I_"sp"$ knockdown in @sec-sourcing takes a further ≈0.4--1.7 kg from these residuals, and GOX fails this check far harder: its mapped 26--49 kg steel cylinders exceed the wet-mass cap on their own. This is exactly the "final flight thrust converges in the engine-sizing section" outcome anticipated in @tbl-sizing-vars, and it points toward the upper half of the thrust bracket.
+
 == Select Best Solution
 
 The high GOX performance and simple single-phase metering are real, and the campaign figure in @sec-sourcing shows GOX/IPA is genuinely the cheapest pure static-fire program, paying back its hardware premium in about 15 hot fires. Raising chamber pressure does not reverse that architecture trade: the pressure sweep keeps the same rank order and slightly widens the GOX-to-N₂O $I_"sp"$ gap, while a higher regulated delivery pressure hurts GOX blowdown usable fraction (@fig-pressure-sensitivity). But the requirement is a hopper, and the quantified GOX penalty is really two distinct penalties. The budget penalty is \$1,190--\$1,870 of oxidizer-side hardware, nearly all of it regulator and oxygen-clean components rather than the cylinder. The flight penalty is the decisive one: mapped across the whole thrust/burn envelope, GOX storage carries about 7 kg of steel per kilogram of usable oxygen against about 1.5 kg/kg for a nitrous bottle, and a flight-weight composite oxygen vessel would fix the tare while making the budget worse. The high peroxide density is also real, but sourcing and decomposition risk dominate.
 
 N₂O wins as an architecture, not as a propellant. Per kilogram it is the most expensive oxidizer in the finalist set, and @sec-n2o-risk records that it is the only finalist whose injector and throttle cannot be closed analytically, so the selection explicitly buys a calibration campaign. What it buys back is that the storage bottle is also the pressurization system, the first fire is the cheapest to reach, and the closest public analog to this exact mission flew on it @kistler2024.
+
+The judgment above is recorded as a weighted matrix so a reviewer can attack the weights instead of the prose. Scores are 1--5 and are generated with the same pipeline as the sizing and cost tables @cost_model_2026. Ignition and start risk is scored as its own criterion rather than folded into development risk, because @sec-n2o-risk shows it is the highest-energy failure mode in the set, not just a schedule item. N₂O/IPA wins while scoring *worst in class* on feed predictability, development risk, and ignition — the storage, cost, and heritage weights carry it — and the two ethanol alternates tie for second.
+
+#figure(
+  block[
+  #set text(size: 7.7pt)
+  #table(
+    columns: (1.5fr, 0.55fr, 0.75fr, 0.9fr, 0.9fr, 0.75fr, 0.9fr),
+    fill: tfill,
+    inset: 3.4pt,
+    [*Criterion*], [*Wt.*], [*N₂O/IPA*], [*N₂O/EtOH*], [*GOX/EtOH*], [*GOX/IPA*], [*85% H₂O₂/IPA*],
+    [Safety and access], [0.15], [4.0], [3.5], [3.0], [3.0], [1.5],
+    [Consumable and hardware cost], [0.15], [4.5], [3.5], [2.0], [2.5], [1.5],
+    [Storage mass and volume], [0.15], [4.0], [4.0], [1.5], [1.5], [5.0],
+    [Feed control and predictability], [0.15], [2.5], [2.5], [4.5], [4.5], [2.5],
+    [Development risk], [0.10], [2.5], [2.5], [4.5], [4.5], [2.0],
+    [Ignition and start risk], [0.10], [2.5], [2.5], [4.5], [4.0], [2.0],
+    [Direct heritage], [0.10], [5.0], [4.0], [3.0], [2.0], [1.0],
+    [Performance], [0.05], [3.0], [3.0], [4.5], [5.0], [3.0],
+    [Cooling / material margin], [0.05], [3.5], [4.5], [4.5], [3.5], [2.0],
+    [*Weighted total*], [*1.00*], [*3.58*], [*3.30*], [*3.30*], [*3.20*], [*2.32*],
+  )
+  ],
+  caption: [Weighted selection matrix for the finalist set. Scores 1--5; weights and scores generated with the sizing/cost pipeline @cost_model_2026.],
+) <tbl-selection-matrix>
 
 #finalist-box[*Baseline propellant selection: N₂O / IPA.* N₂O/IPA is not selected because it is analytically easy; it is selected because it best fits the full hopper constraint set: compact self-pressurizing oxidizer storage, cheap and accessible fuel, and the most relevant small-VTVL flight precedent. The design must explicitly budget the N₂O two-phase modeling and hot-fire calibration matrix as its own line item — about \$670--\$1,200 of propellant for a ten-fire matrix at 200 N, 60 s.]
 
@@ -524,6 +602,7 @@ These numbers are frozen from the propellant CEA optimum and the sizing envelope
   [IPA density (planning)], [786 kg/m³], [same], [≈20°C anhydrous IPA @crc2023.],
   [N₂O liquid density (planning)], [750 kg/m³ warm / 900 cool], [same], [Warm-tank planning vs cooler saturated liquid @nist_n2o; hot tanks hold less.],
   [Ox/fuel *volume* ratio (warm)], [≈5.35], [≈5.35], [Drives unlike-doublet momentum imbalance; see archetype trade.],
+  [Film-cooling reservation], [0%], [0%], [Core sized at O/F 5.10 with no film allocation; a 10--20% fuel film would raise core O/F to ≈5.7--6.4 and force a fuel-orifice resize with the Cooling section.],
 )
 ]
 
@@ -542,7 +621,7 @@ Chamber diameter $D_c$, characteristic length $L^*$, contraction ratio, and nozz
   [*Item*], [*Class*], [*Requirement / design rule*],
   [Fuel metering], [Hard], [Size IPA with single-phase incompressible (SPI) orifice equation; freeze $C_d$ from water-flow, not handbook alone.],
   [Oxidizer metering], [Hard], [Do not size N₂O with SPI alone. Bracket SPI (upper flow / lower area), approximate HEM (lower flow / higher area), and Dyer/NHNE design estimate; require empirical cold-flow map @dyer2007 @solomon2011 @waxman2013 @sec-n2o-risk.],
-  [Injector stiffness (fuel)], [Design rule], [Target fuel injector $Delta P \/ P_c approx 0.15$--$0.25$ at full thrust as a classical isolation/stiffness band @huzel1992.],
+  [Injector stiffness (fuel)], [Design rule], [Target fuel injector $Delta P \/ P_c approx 0.15$--$0.20$ at full thrust as a classical isolation/stiffness band @huzel1992.],
   [Injector $Delta P$ (N₂O)], [Design rule], [Hold a planning $Delta P$ band, but do *not* assume $dot(m) prop sqrt(Delta P)$ after flashing; Snark found N₂O injector drop nearly independent of massflow @waugh2018.],
   [Materials], [Hard], [Aluminum alloy or stainless steel primary wetted structure @tbl-hard-reqs.],
   [Cleanliness], [Hard], [Oxidizer-wetted hardware free of hydrocarbon contamination; N₂O ullage decomposition risk if oil/grease present @karabeyoglu2008.],
@@ -602,7 +681,7 @@ Shared orifice math used for every survivor. Units SI in calculation; tables in 
 
 $ dot(m)_f = C_(d,f) A_f sqrt(2 rho_f Delta P_f) $
 
-Planning $C_(d,f) = 0.70$ until water-flow; $rho_f = 786$ kg/m³; target $Delta P_f = 0.20 P_c = 30$ psia at 200 N full thrust (inside the 15--25% band) @huzel1992.
+Planning $C_(d,f) = 0.70$ until water-flow; $rho_f = 786$ kg/m³; target $Delta P_f = 0.20 P_c = 30$ psi at 200 N full thrust (top of the 15--20% band) @huzel1992.
 
 *Oxidizer (N₂O) — SPI / HEM / Dyer bracket.* SPI is only an upper mass-flow bound for a fixed area when the liquid can flash @dyer2007 @waxman2013. Approximate HEM here is a *planning lower bound*: $dot(m)_"HEM" approx 0.35 thin dot(m)_"SPI"$ at the same $A$ and $Delta P$, an engineering factor in the band where short-orifice saturated N₂O data sit between SPI and deep equilibrium limits in Waxman-class work — *not* a first-principles HEM integration @waxman2013. Dyer/NHNE design estimate @dyer2007 @solomon2011:
 
@@ -630,9 +709,9 @@ At the 200 N, $Delta P = 0.20 P_c$ planning point the generated tables give:
   inset: 3.5pt,
   [*Stream*], [*$dot(m)$*], [*Model*], [*Required total $A$*],
   [IPA], [0.0162 kg/s], [SPI], [1.28 mm²],
-  [N₂O], [0.0824 kg/s], [SPI (min $A$ if no flash)], [≈6.3 mm² class],
+  [N₂O], [0.0824 kg/s], [SPI (min $A$ if no flash)], [7.2 mm²],
   [N₂O], [0.0824 kg/s], [Dyer $k=1$ design], [10.7 mm²],
-  [N₂O], [0.0824 kg/s], [HEM approx (max $A$)], [≈18 mm² class],
+  [N₂O], [0.0824 kg/s], [HEM approx (max $A$)], [20.6 mm²],
 )
 ]
 
@@ -686,11 +765,11 @@ All dimensions below are *preliminary design values* for the 200 N, $P_c = 150$ 
   [*Item*], [*Preliminary value*], [*Basis*],
   [Pattern], [Like-doublet; separate F–F and O–O pairs], [Selection above @nasa_sp8089.],
   [Included impingement angle], [60°], [Common doublet practice @nasa_sp8089 @sweeney2016.],
-  [Fuel pairs / orifices], [2 pairs / 4 holes], [SPI area 1.28 mm² total → $d_f approx 0.64$ mm each @injector_assets_2026.],
+  [Fuel pairs / orifices], [3 pairs / 6 holes], [SPI area 1.28 mm² total → $d_f approx 0.52$ mm each; three fuel pairs interleave 1:2 with the six ox pairs for fan overlap @injector_assets_2026.],
   [Ox pairs / orifices], [6 pairs / 12 holes], [Dyer area 10.7 mm² total → $d_o approx 1.06$ mm each @injector_assets_2026.],
   [Orifice $L\/d$ (both)], [≈3], [Short-tube planning; set final from measured $C_d$ @huzel1992.],
   [Planning $C_d$], [Fuel 0.70; ox 0.65], [Until water-flow / cold-flow; ox lower pending flash.],
-  [Target $Delta P$ at full thrust], [30 psia (0.20 $P_c$) each side as *manifold-to-chamber* planning drop], [Fuel stiffness band @huzel1992; N₂O drop may not track $dot(m)^2$ @waugh2018.],
+  [Target $Delta P$ at full thrust], [30 psi (0.20 $P_c$) each side as *manifold-to-chamber* planning drop], [Fuel stiffness band @huzel1992; N₂O drop may not track $dot(m)^2$ @waugh2018.],
   [Face layout], [Alternating rings or sectors of O–O and F–F pairs; pitch $gt.eq 3d$ local (project packing assumption until $D_c$ fixed)], [Provisional with $A_c\/A_t$ band; finalize with chamber diameter.],
   [Manifolds], [Separate ox and fuel ring manifolds behind the face; no shared cavity], [Interpropellant leak prevention @nasa_sp8089.],
   [Inlet ports], [AN/JIC or equivalent on manifold block], [Hard connector rule @tbl-hard-reqs.],
@@ -707,9 +786,9 @@ All dimensions below are *preliminary design values* for the 200 N, $P_c = 150$ 
 If cold-flow shows discharge closer to HEM than Dyer, ox holes must grow (or $Delta P$ rise). If closer to SPI, holes can shrink. Do not laser-cut the face until at least one N₂O cold-flow campaign on a prototype orifice plate has bounded $C_d$ effective @waxman2013 @solomon2011.
 ]
 
-*Shop notes (project assumptions, not standards).* Prefer gun-drilled or reamed holes over punched sheet for $C_d$ repeatability; deburr exits; keep entrance edge consistent across the set; drill-angle fixture tolerance goal ±1° on impingement half-angle until data say otherwise. Minimum finished fuel diameter stays above ~0.5 mm to limit clogging — the 0.64 mm planning size clears that floor.
+*Shop notes (project assumptions, not standards).* Prefer gun-drilled or reamed holes over punched sheet for $C_d$ repeatability; deburr exits; keep entrance edge consistent across the set; drill-angle fixture tolerance goal ±1° on impingement half-angle until data say otherwise. Minimum finished fuel diameter stays above ~0.5 mm to limit clogging — the 0.52 mm planning size sits just above that floor; if water-flow pushes fuel holes smaller, drop to 2 pairs (0.64 mm) rather than go under it.
 
-*Open items before freezing hardware.* (1) Water-flow $C_d$ vs $Re$ for fuel and for water-as-proxy ox geometry. (2) N₂O cold-flow $dot(m)(T_"tank", P_"tank", "valve")$ on a spare face. (3) Chamber $D_c$ so pitch/rings lock. (4) Film-coolant ring decision with Cooling section. (5) Structural FEA of face under MEOP.
+*Open items before freezing hardware.* (1) Water-flow $C_d$ vs $Re$ for fuel and for water-as-proxy ox geometry. (2) N₂O cold-flow $dot(m)(T_"tank", P_"tank", "valve")$ on a spare face. (3) Chamber $D_c$ so pitch/rings lock. (4) Film-coolant ring decision with Cooling section — any film fraction comes out of the 0.0162 kg/s fuel stream and moves core O/F, so fuel orifices resize with it. (5) Structural FEA of face under MEOP.
 
 == Verification and Calibration Plan
 
@@ -719,6 +798,10 @@ If cold-flow shows discharge closer to HEM than Dyer, ox holes must grow (or $De
 4. *Pass criteria (first article).* Repeatable ignition; no hard start that damages hardware; $c^*$ efficiency high enough for hover math with the 1.2 liftoff margin after real $I_"sp"$; no face burn-through; throttle steps between full and reduced setpoints without divergence @tbl-hard-reqs.
 
 Until those data exist, the like-doublet geometry above is a *design baseline*, not a flight-certified drawing.
+
+= Ignition System Design <sec-ignition-design>
+
+Scope recorded now; design deferred. The baseline concept is a spark-torch-class igniter with its own propellant metering and calibration, an ignition-proven-before-main-oxidizer-valve interlock, and a bounded start transient. Hard-start avoidance is the design driver, because the N₂O ullage is monopropellant-capable and a slow or failed light feeds it (@sec-n2o-risk). The chamber ignition boss reserved in the injector specification is the interface this section will design to. Igniter propellant choice, sizing, and the start sequence are not yet developed.
 
 = Feed System Design
 

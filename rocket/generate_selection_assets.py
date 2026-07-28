@@ -316,23 +316,27 @@ def make_plots(outdir: Path, summary: pd.DataFrame, sizing: pd.DataFrame) -> Non
     plt.close(fig)
 
 def make_selection_matrix(outdir: Path) -> pd.DataFrame:
+    # Ignition/start risk is scored explicitly (hard-start with a monopropellant-capable
+    # oxidizer is the most dangerous single transient); its 0.10 weight is taken from
+    # safety_and_access and development_risk, where it was previously folded implicitly.
     weights = {
-        'safety_and_access': 0.20,
+        'safety_and_access': 0.15,
         'consumable_and_hardware_cost': 0.15,
         'storage_mass_volume': 0.15,
         'feed_control_predictability': 0.15,
-        'development_risk': 0.15,
+        'development_risk': 0.10,
+        'ignition_and_start_risk': 0.10,
         'direct_heritage': 0.10,
         'performance': 0.05,
         'cooling_material_margin': 0.05,
     }
     rows = [
         # Scores are 0-5 where 5 is best for this hopper design. They are intentionally architecture-level, not pure performance rankings.
-        ('N2O/IPA',      4.0, 4.5, 4.0, 2.5, 2.5, 5.0, 3.0, 3.5, 'Selected baseline: compact oxidizer storage and strongest VTVL analog; two-phase injector risk is the dominant development item.'),
-        ('N2O/Ethanol',  3.5, 3.5, 4.0, 2.5, 2.5, 4.0, 3.0, 4.5, 'Backup: best N2O/alcohol literature and cooling conductivity; less convenient fuel procurement.'),
-        ('GOX/Ethanol',  3.0, 2.0, 1.5, 4.5, 4.5, 3.0, 4.5, 4.5, 'Alternate if two-phase N2O is unacceptable; gas storage and oxygen hardware dominate cost/mass.'),
-        ('GOX/IPA',      3.0, 2.5, 1.5, 4.5, 4.5, 2.0, 5.0, 3.5, 'Valid GOX alternate; slightly better computed Isp but less directly validated than GOX/ethanol.'),
-        ('85% H2O2/IPA', 1.5, 1.5, 5.0, 2.5, 2.0, 1.0, 3.0, 2.0, 'Near miss only: compact and similar Isp, but oxidizer access, decomposition, catalyst/ignition, and compatibility risks are severe.'),
+        ('N2O/IPA',      4.0, 4.5, 4.0, 2.5, 2.5, 2.5, 5.0, 3.0, 3.5, 'Selected baseline: compact oxidizer storage and strongest VTVL analog; two-phase injector risk is the dominant development item.'),
+        ('N2O/Ethanol',  3.5, 3.5, 4.0, 2.5, 2.5, 2.5, 4.0, 3.0, 4.5, 'Backup: best N2O/alcohol literature and cooling conductivity; less convenient fuel procurement.'),
+        ('GOX/Ethanol',  3.0, 2.0, 1.5, 4.5, 4.5, 4.5, 3.0, 4.5, 4.5, 'Alternate if two-phase N2O is unacceptable; gas storage and oxygen hardware dominate cost/mass; best-documented ignition path.'),
+        ('GOX/IPA',      3.0, 2.5, 1.5, 4.5, 4.5, 4.0, 2.0, 5.0, 3.5, 'Valid GOX alternate; slightly better computed Isp but less directly validated than GOX/ethanol.'),
+        ('85% H2O2/IPA', 1.5, 1.5, 5.0, 2.5, 2.0, 2.0, 1.0, 3.0, 2.0, 'Near miss only: compact and similar Isp, but oxidizer access, decomposition, catalyst/ignition, and compatibility risks are severe.'),
     ]
     cols=['case', *weights.keys(), 'selection_note']
     df=pd.DataFrame(rows, columns=cols)

@@ -1,9 +1,10 @@
 criterion,weight
-safety_and_access,0.2
+safety_and_access,0.15
 consumable_and_hardware_cost,0.15
 storage_mass_volume,0.15
 feed_control_predictability,0.15
-development_risk,0.15
+development_risk,0.1
+ignition_and_start_risk,0.1
 direct_heritage,0.1
 performance,0.05
 cooling_material_margin,0.05
