@@ -41,28 +41,9 @@
 #v(1em)
 #align(center)[
   #text(size: 17pt, weight: "bold")[
-    A Step-by-Step Guide to 2D Motion Profiling Using Bézier Curves
+    2D Motion Profiling Using Bézier Curves
   ]
-  #v(1.2em)
-  #text(size: 12pt)[Mechanics Division, Autonomous Systems Research]
   #v(0.8em)
-  // Literal, not `datetime.today()`: the nix devenv pins SOURCE_DATE_EPOCH,
-  // which Typst honours, so `today()` would render 1980-01-01.
-  #text(size: 12pt)[July 28, 2026]
-]
-
-#v(2em)
-
-#block(inset: (x: 0.5in))[
-  #align(center)[#text(size: 10pt, weight: "bold")[Abstract]]
-  #v(0.5em)
-  #set text(size: 10pt)
-  This paper walks through the construction and explanation of a real-time motion
-  profiling system for differential drive robots. It introduces foundational
-  concepts in calculus, curve modeling, numerical integration, and motion
-  planning. All concepts are broken down for high-school level understanding,
-  with annotated code and diagrams to guide the reader through the complete
-  system.
 ]
 
 #v(1.5em)
@@ -73,14 +54,16 @@
 
 = What is Motion Profiling?
 
+As the name suggest motion profiling profiles a motion, specifically deriving characteristcs about a movement. Specifically it derives in most cases velocities and/or derivatives of it.
+
 Motion profiling answers the question: how should a robot move from point A to
-point B smoothly and safely?
+point B?
 
 - How fast should it go?
 - When should it turn?
 - When should it start slowing down?
 
-The result is a path plus a time-parameterized velocity and angular velocity
+In this case the result is a path plus a time-parameterized velocity and angular velocity
 profile that respects the robot's physical limits.
 
 = Our Goal: Move Along a Curve <sec-goal>
@@ -111,7 +94,7 @@ There are multiple ways to describe a smooth curve:
   waypoints. The curve is calculated to smoothly interpolate through all the
   points, making it easy to create paths through specific locations.
 
-We chose the cubic Bézier for its balance of simplicity and control @farin. The
+Here I chose the cubic Bézier for its balance of simplicity and control @farin. The
 following are the functions that describe the x and y coordinates of the cubic
 Bézier curve.
 
@@ -138,32 +121,6 @@ along the path. Each keyframe corresponds to a specific distance along the path
 constructs the speed profile by connecting these points smoothly, ensuring the
 robot slows down or speeds up at the designated locations.
 
-= Quick Primer: Derivatives and Integrals
-
-#heading(
-  level: 2,
-  numbering: none,
-  outlined: false,
-)[Derivative = Rate of Change]
-
-If $s(t)$ is position over time, then
-
-$ v(t) = (d s)/(d t), $
-
-the instantaneous speed.
-
-#heading(
-  level: 2,
-  numbering: none,
-  outlined: false,
-)[Integral = Area Under Curve]
-
-If $v(t)$ is speed, then
-
-$ s(t) = integral_0^t v(tau) thin d tau, $
-
-the total distance traveled.
-
 = Arc Length via Gaussian Quadrature
 
 For a parametric curve $bold(r)(t) = (x(t), y(t))$, the arc length from the start
@@ -180,8 +137,7 @@ $
 $
 
 *Numerical integration rationale.*
-For most curves, there isn't a simple formula for $s(t)$, so we need to integrate
-numerically. Gaussian quadrature is one effective method for numerical
+For most curves, there isn't a simple formula for $s(t)$ (and this is true for Cubic Bézier Curves), so we need to integrate numerically. Gaussian quadrature is one effective method for numerical
 integration. It chooses special sample points (nodes $x_i$) and weights $w_i$ to
 maximize accuracy. An $n$-point Gauss--Legendre rule is exact for all polynomials
 up to degree $2n - 1$, meaning it integrates any such polynomial perfectly on
@@ -337,7 +293,7 @@ $
   (v^2 - v_0^2)/2 = a thin Delta s,
 $
 
-so rearranging gives $Delta s = (v^2 - v_0^2) \/ (2 a)$.
+so rearranging gives $Delta s = (v^2 - v_0^2) / (2 a)$.
 
 = Curvature and Turning Speed
 
@@ -489,11 +445,7 @@ forces the robot to start braking for it early---by the time $v_"curve"$ or
 $v_"interp"$ drops, the robot may be physically unable to slow down fast enough,
 since real deceleration is also bounded by $a_max$. The standard fix is to
 precompute the profile over a discretized path with a _forward pass_ (propagating
-acceleration limits) and a _backward pass_ (propagating deceleration limits back
-from every slow point), taking the pointwise minimum. This two-pass idea goes
-back to the time-optimal path parameterization literature @bobrow @shinmckay
-@toppra and is exactly what tools like WPILib's trajectory generator do @wpilib;
-see @sec-related.
+acceleration limits) and a _backward pass_ (propagating deceleration limits back from every slow point), taking the pointwise minimum. This two-pass idea goes back to the time-optimal path parameterization literature @bobrow @shinmckay @toppra and is exactly what tools like WPILib's trajectory generator do @wpilib; see @sec-related.
 
 = Handling Multiple Path Segments
 
@@ -621,14 +573,9 @@ calculations. For example:
   $ a(v) = a_max (1 - v/v_"free"), $
 
   where $v_"free"$ is the motor's free (no-load) speed.
-- *Friction and Drag*: Include frictional forces (wheel friction, air resistance)
-  in the model. These forces oppose motion and reduce net acceleration,
-  especially at higher speeds.
 - *Full Dynamics*: Model the robot's full dynamics (mass, rotational inertia) for
-  more realistic acceleration behavior.
-- *Numerical Refinements*: Use more advanced numerical methods (adaptive
-  integration steps, etc.) to improve the accuracy of the motion profile
-  calculations.
+  more realistic acceleration behavior possibly including friction and maybe even drag.
+- *Implement back propogation*: Propagate deceleration limits back from every slow point, taking the pointwise minimum at each.
 
 = Related Work and Similar Systems <sec-related>
 
@@ -672,27 +619,12 @@ the RAMSETE tracking controller referenced in the previous section.
 = Further Learning Resources
 
 - *YouTube - "The Continuity of Splines":* Deep dive into spline curves by Freya
-  Holmér @holmer
+  Holmér (Highly Reccomend!!!!) @holmer
 - *Khan Academy:* Derivatives and Integrals (introductory calculus lessons)
 - *Feynman Lectures on Physics*, Vol. 1 (insightful treatment of motion in
   Chapter 8)
 - *MIT OCW:* 18.01 Single Variable Calculus (free online course materials)
-
-= Conclusion
-
-We have shown how to build a motion profiler that:
-
-- Defines a path with cubic Béziers
-- Uses calculus and numerical methods to track arc-length
-- Computes acceleration, curvature, and keyframe limits
-- Steps along the path with Newton--Raphson root-finding
-- Outputs $(v, omega)$ for closed-loop control (e.g. feeding into a controller
-  like RAMSETE)
-
-This approach blends math, programming, and robotics in an accessible,
-step-by-step way. By understanding the underlying methods (and their
-limitations), a student can extend and refine the system to handle more complex
-real-world conditions.
+- *MIT OCW:* 18.02 Multi Variable Calculus for an in-depth look at some of the Calculus going on including possibly derivations of curvature and such (free online course materials as well)
 
 #pagebreak()
 
@@ -700,4 +632,3 @@ real-world conditions.
   "references.bib",
   style: "ieee",
 )
-
