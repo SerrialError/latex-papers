@@ -155,8 +155,9 @@ which integrates any cubic polynomial exactly.
 
 *Table of Nodes and Weights.*
 The following table lists the Gauss--Legendre nodes $x_i$ and weights $w_i$ on
-the standard interval $[-1, 1]$ for $n = 2, 3, 4$, as tabulated in standard
-references @gauss. These are the constants you plug into the formula above.
+the standard interval $[-1, 1]$ for $n = 2, 3, 4, 5$, as tabulated in standard
+references @gauss. These are the constants you plug into the formula above; the
+$n = 5$ row is the one my implementation actually uses.
 
 #align(center)[
   #table(
@@ -184,6 +185,13 @@ references @gauss. These are the constants you plug into the formula above.
     $-0.339981$, $0.652145$,
     $+0.339981$, $0.652145$,
     $+0.861136$, $0.347855$,
+    table.hline(stroke: 0.5pt),
+
+    table.cell(rowspan: 5)[5], $-0.906180$, $0.236927$,
+    $-0.538469$, $0.478629$,
+    $0$, $128\/225 approx 0.568889$,
+    $+0.538469$, $0.478629$,
+    $+0.906180$, $0.236927$,
     table.hline(stroke: 1pt),
   )
 ]
@@ -201,16 +209,28 @@ to compute
 
 $ s(t) approx t/2 sum_(i=1)^n w_i thin norm(bold(r)'(tau_i)). $
 
-With just $n = 4$ or $5$, this gives a highly accurate approximation of $s(t)$
-without needing extremely fine subdivisions.
+*Why one panel is not enough.* For a cubic Bézier the integrand
+$norm(bold(r)'(tau))$ is the _square root_ of a polynomial, not a polynomial
+itself, so the "exact for degree $2n - 1$" guarantee does not apply at all --- no
+choice of $n$ makes a single application of the rule exact here. What the rule
+still gives is fast convergence for smooth integrands, and that convergence is
+much faster on short intervals than on long ones. On a long or wiggly curve a
+single $n = 5$ panel spanning all of $[0, t]$ leaves error large enough to
+misplace the robot; the fix is _composite_ quadrature, splitting the interval
+into $m$ equal panels and applying the rule on each @wang:
 
-One honest caveat: for a cubic Bézier, the integrand $norm(bold(r)'(tau))$ is the
-_square root_ of a polynomial, not a polynomial itself, so the "exact for degree
-$2n - 1$" guarantee does not literally apply. In practice Gaussian quadrature
-still converges very quickly for smooth integrands like this one; accuracy only
-degrades near degenerate curves (e.g. control-point placements where
-$norm(bold(r)')$ approaches zero, creating a cusp), where subdividing the
-interval restores accuracy @wang.
+$
+  s(t) approx sum_(j=0)^(m-1) h/2 sum_(i=1)^n w_i thin
+  norm(bold(r)'(h j + h/2 (x_i + 1))),
+  quad quad h = t/m.
+$
+
+I use $n = 5$ nodes with $m = 8$ panels, so each call costs 40 evaluations of
+$norm(bold(r)')$ --- cheap enough to run every control cycle, and accurate enough
+that the residual error is well below the robot's odometry noise. Accuracy still
+degrades near degenerate curves (control-point placements where
+$norm(bold(r)')$ approaches zero, creating a cusp), where further subdivision is
+the remedy @wang.
 
 = Finding the Next Parameter: Newton--Raphson
 
@@ -313,6 +333,22 @@ only depends on $abs(kappa)$, but the sign matters later: the commanded angular
 velocity is $omega = v kappa$, so if we dropped the sign the robot could only
 ever turn one way.
 
+*What to do at a cusp.* The denominator $norm(bold(r)'(t))^3$ collapses to zero
+where the parametric speed vanishes, and the formula is undefined there. It is
+tempting to return $kappa = 0$ to avoid the division, but that is exactly
+backwards: a cusp is the _sharpest_ point on the path, geometrically a turn of
+zero radius, so $abs(kappa) -> infinity$. Returning zero would remove the
+curvature speed limit precisely where it is needed most and send the robot
+through the cusp at full speed. The safe convention is to saturate $abs(kappa)$
+at a large finite value (keeping the sign of the cross product where it is still
+recoverable, so the turn direction survives). The limit
+$v_"curve" = v_max dot R\/(R + w\/2)$ then drives $v -> 0$ as $R -> 0$, and since
+$omega = v kappa$ the angular velocity tends to
+$omega -> 2 v_max \/ w$ --- the robot turning in place at the drivetrain's maximum
+rate, which is the physically correct behaviour at a cusp. The same degeneracy
+breaks the Newton iteration of the previous section, because $norm(bold(r)')$ is
+its derivative; that is when the bisection fallback earns its keep.
+
 The wheels of a differential drive robot have a maximum speed. In a turn, the
 outer wheel travels faster than the robot's center, so the center must slow down
 to keep the outer wheel within its limit @lavalle @wpilib. We therefore restrict
@@ -372,23 +408,105 @@ $ v_"curve"(t) = v_max dot R(t)/(R(t) + r), $
 which is a more geometric way of expressing the speed limit based on curvature
 and robot geometry.
 
-= Keyframe Velocity Interpolation
+= Keyframes: Localisation and Velocity Interpolation
 
-Suppose we have keyframe pairs $(s_i, v_i)$, which define desired velocities
-$v_i$ at specific arc lengths (distances) $s_i$ along the path. To determine the
-target velocity at any intermediate position $s$ (where $s_i <= s <= s_(i+1)$),
-we linearly interpolate between the surrounding keyframes:
+== Locating a Keyframe on the Path
+
+A path editor hands me keyframes as $(x, y, v)$: a point the user clicked on the
+field and the speed they want there. Everything downstream is indexed by the
+curve parameter $t$, so the first job is to turn that point $bold(p) = (x, y)$
+into a parameter.
+
+The tempting shortcut is to solve $x(t) = x_"kf"$ for $t$ and ignore $y$. That is
+wrong on any path that revisits an $x$ coordinate --- an S-curve, a loop, or
+anything that doubles back --- because the equation then has several roots and
+nothing in it distinguishes the intended one from a branch of the path metres
+away. It also fails outright when the keyframe sits slightly off the curve, since
+$x(t) = x_"kf"$ may have no solution in $[0, 1]$ at all.
+
+The correct question is a projection: which point of the curve is closest to
+$bold(p)$?
 
 $
-  lambda = (s - s_i)/(s_(i+1) - s_i),
+  t^* = op("argmin", limits: #true)_(t in [0, 1]) norm(bold(r)(t) - bold(p))^2.
+$
+
+Differentiating the objective gives the stationary condition
+
+$
+  d/(d t) norm(bold(r)(t) - bold(p))^2 = 2 (bold(r)(t) - bold(p)) dot bold(r)'(t) = 0,
+$
+
+which says the error vector is orthogonal to the tangent --- the familiar
+foot-of-perpendicular condition. Writing
+$g(t) = (bold(r)(t) - bold(p)) dot bold(r)'(t)$, Newton's method applies again
+with
+
+$
+  g'(t) = norm(bold(r)'(t))^2 + (bold(r)(t) - bold(p)) dot bold(r)''(t),
   quad quad
-  v_"interp"(s) = v_i + lambda (v_(i+1) - v_i).
+  t_(k+1) = t_k - g(t_k)/(g'(t_k)).
 $
 
-*Note:* This is just the equation of a line, $f(x) = m dot x + b$, in disguise:
-the input is $x = s - s_i$, the slope is $m = (v_(i+1) - v_i)/(s_(i+1) - s_i)$,
-and the intercept is $b = v_i$. The quantity $lambda in [0, 1]$ is simply the
-fraction of the way from $s_i$ to $s_(i+1)$.
+For a cubic Bézier, $g$ is a quintic in $t$ and can have up to five roots, so the
+squared distance is _not_ convex and Newton alone will happily converge to the
+wrong local minimum. I therefore scan a coarse grid (64 samples) for the best
+basin, refine from there, and discard the refinement if it ends up farther from
+$bold(p)$ than the sampled seed.
+
+Two things are worth rejecting rather than silently accepting:
+
+- *Off-path keyframes.* The projection always returns some $t^*$, even for a
+  point nowhere near the curve. If the residual $norm(bold(r)(t^*) - bold(p))$
+  exceeds a tolerance, the keyframe's velocity would be applied at a location the
+  user never intended, so it is better to raise an error than to guess.
+- *Out-of-order keyframes.* The interpolation below walks a list sorted by
+  position along the path, so a keyframe projecting to a $t^*$ behind its
+  predecessor would bracket the wrong interval. Requiring $t^*$ to be
+  non-decreasing catches this at setup time.
+
+Given $t^*$ for each keyframe, the arc-length position follows from the
+quadrature of the previous section: $s_i = s(t_i^*)$.
+
+== Interpolating Between Keyframes
+
+Now we have pairs $(s_i, v_i)$: desired speeds $v_i$ at arc lengths $s_i$. For an
+intermediate position $s$ with $s_i <= s <= s_(i+1)$, define the fraction of the
+way through the interval
+
+$ lambda = (s - s_i)/(s_(i+1) - s_i) in [0, 1]. $
+
+The obvious move is to interpolate $v$ itself linearly in $s$. It is worth seeing
+why that is the wrong quantity to make linear. Along the path
+$a = v thin (d v)/(d s)$, so a profile linear in $s$ implies
+
+$
+  a(s) = v(s) dot (v_(i+1) - v_i)/(s_(i+1) - s_i),
+$
+
+which is proportional to the current speed: the segment demands the _most_
+acceleration exactly where the robot is already moving fastest, and the demand
+changes continuously across an interval the planner treats as one piece.
+
+Interpolating in $v^2$ instead fixes this:
+
+$
+  v_"interp"(s)^2 = v_i^2 + lambda thin (v_(i+1)^2 - v_i^2),
+  quad quad
+  v_"interp"(s) = sqrt(v_i^2 + lambda thin (v_(i+1)^2 - v_i^2)).
+$
+
+Compare this with the kinematic relation $v^2 = v_0^2 + 2 a thin (s - s_0)$ from
+@sec-kinematics. They match term for term with
+
+$ a = (v_(i+1)^2 - v_i^2)/(2 (s_(i+1) - s_i)), $
+
+a _constant_. So interpolating in $v^2$ makes each keyframe interval a
+constant-acceleration segment, which is the same shape as every other limit in
+the planner and therefore something the acceleration limit can actually honour.
+In code, clamp $lambda$ to $[0, 1]$ so a robot slightly past a keyframe does not
+extrapolate, and floor the radicand at zero before taking the square root, since
+rounding can push it slightly negative when both endpoint speeds are near zero.
 
 = Velocity Planning Algorithm
 
@@ -476,18 +594,15 @@ keyframe at the segment boundary to enforce a specific speed at that point.)
 
 #listing[
   ```cpp
-  VelocityLayout TrapezoidalProfile::step() {
-      if (isFinished()) {
-          return { 0.0f, 0.0f, time_accum_ };
-      }
-
+  void TrapezoidalProfile::step() {
+      ++step_count_;
       time_accum_ += dt_;
       s_current_ = sFunction(control_, prev_t_);
 
       float keyframe_lim  = computeKeyframeLimit();
       float curvature_lim = computeCurvatureVelocityLimit(prev_t_);
-      float accel_lim     = computeAccelerationLimit(s_current_);
-      float brake_lim     = computeDecelerationLimit(s_current_);
+      float accel_lim     = computeAccelerationLimit();
+      float brake_lim     = computeBrakingLimit(s_current_);
 
       // All limits are upper bounds; command the smallest.
       float desired_linear = std::min({ curvature_lim,
@@ -498,22 +613,23 @@ keyframe at the segment boundary to enforce a specific speed at that point.)
       float deltaS = desired_linear * dt_;
       float next_t = findNextT(s_current_, deltaS);
 
-      float kappa = curvature(control_, next_t);
+      float kappa = signedCurvature(control_, next_t);
       float turning_component = kappa * desired_linear;
 
-      Pose newPose = findXandY(control_, next_t);
-      poses_.push_back(newPose);
-
-      VelocityLayout vlay{ desired_linear, turning_component, time_accum_ };
-      velocities_.push_back(vlay);
+      poses_.push_back(findXandY(control_, next_t));
+      velocities_.push_back({ desired_linear, turning_component, time_accum_ });
 
       prev_t_    = next_t;
       cur_speed_ = desired_linear;
-
-      return vlay;
   }
   ```
 ]
+
+Each call advances the profile by one timestep and appends to the pose and
+velocity vectors rather than returning a sample; the caller loops on
+`isFinished()` and reads the accumulated trajectory afterwards. That termination
+test checks a step counter as well as $t >= 1$, so a path that stalls near a cusp
+ends instead of spinning forever.
 
 *How to use these outputs.* Send $v_"desired"$ and $omega$ to your drivetrain's
 velocity controller (commonly a PID or feedforward velocity controller, which is
@@ -524,10 +640,76 @@ $
   v_"right" = v_"desired" + (omega thin w)/2,
 $
 
-where $w$ is the track width. For even better tracking, you can wrap this in a
-RAMSETE @ramsete @veness or pure-pursuit @coulter controller that uses the
-robot's pose feedback to correct errors and ensure convergence to the planned
-path.
+where $w$ is the track width. That is open loop: it assumes the robot ends up
+where the plan says it does. To close the loop on pose feedback, wrap it in a
+tracking controller such as pure pursuit @coulter or RAMSETE, which the next
+section derives.
+
+= Trajectory Tracking with RAMSETE
+
+The profile above produces a reference trajectory: a pose
+$bold(q)_d = (x_d, y_d, theta_d)$ and a velocity pair $(v_d, omega_d)$ at each
+timestep. Wheel slip, odometry drift, and modelling error all mean the robot will
+not sit exactly on that reference, so a tracking controller corrects the
+difference. RAMSETE is the standard choice for a differential drive @ramsete: it
+is a nonlinear controller with only two tuning parameters and a global
+convergence proof.
+
+*Error in the robot's frame.* The pose error is expressed in the robot's own
+frame rather than the field frame, which is what lets one control law work at any
+heading:
+
+$
+  mat(e_x; e_y; e_theta)
+  = mat(
+    cos theta, sin theta, 0;
+    -sin theta, cos theta, 0;
+    0, 0, 1
+  )
+  mat(x_d - x; y_d - y; theta_d - theta).
+$
+
+So $e_x$ is the along-track error (ahead of the robot is positive), $e_y$ the
+cross-track error (to the robot's left), and $e_theta$ the heading error, which
+must be wrapped to $(-pi, pi]$ before use.
+
+*The control law.* RAMSETE commands @ramsete @veness
+
+$
+  k &= 2 zeta sqrt(omega_d^2 + b thin v_d^2), \
+  v &= v_d cos e_theta + k thin e_x, \
+  omega &= omega_d + k thin e_theta + b thin v_d thin op("sinc")(e_theta) thin e_y,
+$
+
+where $op("sinc")(e_theta) = sin(e_theta) \/ e_theta$, taken as $1$ in the limit
+$e_theta -> 0$ (in code, switch to $1$ below a small threshold to avoid $0\/0$).
+The gains are $b > 0$ and $zeta in (0, 1)$; larger $b$ makes the correction more
+aggressive and $zeta$ sets the damping. Note the structure: the linear command
+corrects along-track error directly, while cross-track error is corrected through
+_steering_ ($e_y$ appears only in $omega$), which is the only way a differential
+drive can fix it --- it cannot translate sideways.
+
+*Mind the units.* This is the part I got wrong the first time, and dimensional
+analysis is what caught it. Since $k$ multiplies $e_theta$ (radians, i.e.
+dimensionless) to produce an angular velocity, $k$ must carry units of
+$"s"^(-1)$. Inside the square root, $omega_d^2$ is already $"s"^(-2)$, so
+$b thin v_d^2$ must also be $"s"^(-2)$; with $v_d$ in $"m" \/ "s"$ that forces
+
+$ [b] = "m"^(-2). $
+
+Everything else follows: $k thin e_x$ has units $"s"^(-1) dot "m" = "m"\/"s"$,
+matching $v$, and $b thin v_d thin e_y$ has units
+$"m"^(-2) dot "m"\/"s" dot "m" = "s"^(-1)$, matching $omega$. Any arrangement of
+the gains that fails this check is wrong regardless of how plausible it looks or
+how well it happens to behave in one test --- which is exactly how I found the
+bug in my original implementation.
+
+A Lyapunov argument establishes that the origin $bold(e) = bold(0)$ is
+asymptotically stable for any $b > 0$, $zeta in (0, 1)$; see @ramsete for the
+original proof and @veness for a derivation aimed at competition robotics. One
+practical caveat: because $k$ scales with $v_d$ and $omega_d$, the controller has
+no authority when the reference is stationary, so RAMSETE corrects error while
+the robot is moving and should be handed off to a pose controller at rest.
 
 = Why Acceleration/Deceleration Distance is an Approximation
 
@@ -613,8 +795,8 @@ trapezoidal profiles; WPILib's trajectory generator @wpilib performs a
 forward/backward pass subject to constraints, including a differential-drive
 wheel-speed constraint identical in spirit to our curvature limit; and GUI tools
 such as PathPlanner @pathplanner and PATH.JERRYIO @jerryio provide the
-keyframe-editing workflow described earlier. Veness's free book @veness derives
-the RAMSETE tracking controller referenced in the previous section.
+keyframe-editing workflow described earlier. Veness's free book @veness gives an
+accessible derivation of the RAMSETE controller stated above.
 
 = Further Learning Resources
 
