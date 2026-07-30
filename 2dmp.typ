@@ -41,7 +41,7 @@
 #v(1em)
 #align(center)[
   #text(size: 17pt, weight: "bold")[
-    2D Motion Profiling Using Bézier Curves
+    An Extended Guide and Derivation to 2D Motion Profiling Using Bézier Curves
   ]
   #v(0.8em)
 ]
@@ -137,10 +137,7 @@ $
 $
 
 *Numerical integration rationale.*
-For most curves, there isn't a simple formula for $s(t)$ (and this is true for Cubic Bézier Curves), so we need to integrate numerically. Gaussian quadrature is one effective method for numerical
-integration. It chooses special sample points (nodes $x_i$) and weights $w_i$ to
-maximize accuracy. An $n$-point Gauss--Legendre rule is exact for all polynomials
-up to degree $2n - 1$, meaning it integrates any such polynomial perfectly on
+For most curves, there isn't a simple formula for $s(t)$ (and this is true for Cubic Bézier Curves), so we need to integrate numerically. Gaussian quadrature is one effective method for numerical integration. It chooses special sample points (nodes $x_i$) and weights $w_i$ to maximize accuracy. An $n$-point Gauss--Legendre rule is exact for all polynomials up to degree $2n - 1$, meaning it integrates any such polynomial perfectly on
 $[-1, 1]$ with only $n$ evaluations of $f$.
 
 To illustrate, the 2-point Gaussian rule on $[-1, 1]$ picks
@@ -253,8 +250,7 @@ $ F(t) = s(t) - (s_"current" + Delta s) = 0 $
 for $t$. Newton--Raphson is an efficient iterative technique that uses the
 derivative $F'(t) = s'(t) = norm(bold(r)'(t))$. Note that this is the
 _parametric_ speed of the curve (how fast the point moves as $t$ changes), not
-the robot's commanded velocity---we reserve $v$ for the latter to avoid
-confusion. Starting from an initial guess $t_k$, we linearize and obtain
+the robot's commanded velocity. Starting from an initial guess $t_k$, we linearize and obtain
 
 $
   t_(k+1) = t_k - F(t_k)/(F'(t_k))
@@ -263,8 +259,7 @@ $
 
 In practice each iterate should also be clamped to the valid parameter range
 $t in [0, 1]$; if Newton's method fails to converge within $k_max$ iterations
-(possible when $norm(bold(r)')$ is very small), falling back to bisection is a
-robust remedy @wang.
+(possible when $norm(bold(r)')$ is very small), falling back to bisection (essentially like a binary search algorithm for finding a zero) is a robust remedy @wang.
 
 *Stopping criterion.* We iterate $k = 0, 1, 2, dots$ until one of the following
 is met:
@@ -347,7 +342,7 @@ $omega = v kappa$ the angular velocity tends to
 $omega -> 2 v_max \/ w$ --- the robot turning in place at the drivetrain's maximum
 rate, which is the physically correct behaviour at a cusp. The same degeneracy
 breaks the Newton iteration of the previous section, because $norm(bold(r)')$ is
-its derivative; that is when the bisection fallback earns its keep.
+its derivative; that's where the bisection algorithm would fit.
 
 The wheels of a differential drive robot have a maximum speed. In a turn, the
 outer wheel travels faster than the robot's center, so the center must slow down
@@ -428,7 +423,7 @@ The correct question is a projection: which point of the curve is closest to
 $bold(p)$?
 
 $
-  t^* = op("argmin", limits: #true)_(t in [0, 1]) norm(bold(r)(t) - bold(p))^2.
+  t^* = limits(min)_(t in [0, 1]) norm(bold(r)(t) - bold(p))^2.
 $
 
 Differentiating the objective gives the stationary condition
@@ -437,8 +432,7 @@ $
   d/(d t) norm(bold(r)(t) - bold(p))^2 = 2 (bold(r)(t) - bold(p)) dot bold(r)'(t) = 0,
 $
 
-which says the error vector is orthogonal to the tangent --- the familiar
-foot-of-perpendicular condition. Writing
+which says the error vector is orthogonal to the tangent. Writing
 $g(t) = (bold(r)(t) - bold(p)) dot bold(r)'(t)$, Newton's method applies again
 with
 
@@ -454,17 +448,6 @@ wrong local minimum. I therefore scan a coarse grid (64 samples) for the best
 basin, refine from there, and discard the refinement if it ends up farther from
 $bold(p)$ than the sampled seed.
 
-Two things are worth rejecting rather than silently accepting:
-
-- *Off-path keyframes.* The projection always returns some $t^*$, even for a
-  point nowhere near the curve. If the residual $norm(bold(r)(t^*) - bold(p))$
-  exceeds a tolerance, the keyframe's velocity would be applied at a location the
-  user never intended, so it is better to raise an error than to guess.
-- *Out-of-order keyframes.* The interpolation below walks a list sorted by
-  position along the path, so a keyframe projecting to a $t^*$ behind its
-  predecessor would bracket the wrong interval. Requiring $t^*$ to be
-  non-decreasing catches this at setup time.
-
 Given $t^*$ for each keyframe, the arc-length position follows from the
 quadrature of the previous section: $s_i = s(t_i^*)$.
 
@@ -476,8 +459,7 @@ way through the interval
 
 $ lambda = (s - s_i)/(s_(i+1) - s_i) in [0, 1]. $
 
-The obvious move is to interpolate $v$ itself linearly in $s$. It is worth seeing
-why that is the wrong quantity to make linear. Along the path
+The obvious move is to interpolate $v$ itself linearly in $s$. Along the path
 $a = v thin (d v)/(d s)$, so a profile linear in $s$ implies
 
 $
@@ -503,10 +485,7 @@ $ a = (v_(i+1)^2 - v_i^2)/(2 (s_(i+1) - s_i)), $
 
 a _constant_. So interpolating in $v^2$ makes each keyframe interval a
 constant-acceleration segment, which is the same shape as every other limit in
-the planner and therefore something the acceleration limit can actually honour.
-In code, clamp $lambda$ to $[0, 1]$ so a robot slightly past a keyframe does not
-extrapolate, and floor the radicand at zero before taking the square root, since
-rounding can push it slightly negative when both endpoint speeds are near zero.
+the planner.
 
 = Velocity Planning Algorithm
 
@@ -632,8 +611,7 @@ test checks a step counter as well as $t >= 1$, so a path that stalls near a cus
 ends instead of spinning forever.
 
 *How to use these outputs.* Send $v_"desired"$ and $omega$ to your drivetrain's
-velocity controller (commonly a PID or feedforward velocity controller, which is
-beyond the scope of this guide). A typical differential-drive conversion is:
+velocity controller. A typical differential-drive conversion is:
 
 $
   v_"left" = v_"desired" - (omega thin w)/2, quad quad
@@ -642,74 +620,7 @@ $
 
 where $w$ is the track width. That is open loop: it assumes the robot ends up
 where the plan says it does. To close the loop on pose feedback, wrap it in a
-tracking controller such as pure pursuit @coulter or RAMSETE, which the next
-section derives.
-
-= Trajectory Tracking with RAMSETE
-
-The profile above produces a reference trajectory: a pose
-$bold(q)_d = (x_d, y_d, theta_d)$ and a velocity pair $(v_d, omega_d)$ at each
-timestep. Wheel slip, odometry drift, and modelling error all mean the robot will
-not sit exactly on that reference, so a tracking controller corrects the
-difference. RAMSETE is the standard choice for a differential drive @ramsete: it
-is a nonlinear controller with only two tuning parameters and a global
-convergence proof.
-
-*Error in the robot's frame.* The pose error is expressed in the robot's own
-frame rather than the field frame, which is what lets one control law work at any
-heading:
-
-$
-  mat(e_x; e_y; e_theta)
-  = mat(
-    cos theta, sin theta, 0;
-    -sin theta, cos theta, 0;
-    0, 0, 1
-  )
-  mat(x_d - x; y_d - y; theta_d - theta).
-$
-
-So $e_x$ is the along-track error (ahead of the robot is positive), $e_y$ the
-cross-track error (to the robot's left), and $e_theta$ the heading error, which
-must be wrapped to $(-pi, pi]$ before use.
-
-*The control law.* RAMSETE commands @ramsete @veness
-
-$
-  k &= 2 zeta sqrt(omega_d^2 + b thin v_d^2), \
-  v &= v_d cos e_theta + k thin e_x, \
-  omega &= omega_d + k thin e_theta + b thin v_d thin op("sinc")(e_theta) thin e_y,
-$
-
-where $op("sinc")(e_theta) = sin(e_theta) \/ e_theta$, taken as $1$ in the limit
-$e_theta -> 0$ (in code, switch to $1$ below a small threshold to avoid $0\/0$).
-The gains are $b > 0$ and $zeta in (0, 1)$; larger $b$ makes the correction more
-aggressive and $zeta$ sets the damping. Note the structure: the linear command
-corrects along-track error directly, while cross-track error is corrected through
-_steering_ ($e_y$ appears only in $omega$), which is the only way a differential
-drive can fix it --- it cannot translate sideways.
-
-*Mind the units.* This is the part I got wrong the first time, and dimensional
-analysis is what caught it. Since $k$ multiplies $e_theta$ (radians, i.e.
-dimensionless) to produce an angular velocity, $k$ must carry units of
-$"s"^(-1)$. Inside the square root, $omega_d^2$ is already $"s"^(-2)$, so
-$b thin v_d^2$ must also be $"s"^(-2)$; with $v_d$ in $"m" \/ "s"$ that forces
-
-$ [b] = "m"^(-2). $
-
-Everything else follows: $k thin e_x$ has units $"s"^(-1) dot "m" = "m"\/"s"$,
-matching $v$, and $b thin v_d thin e_y$ has units
-$"m"^(-2) dot "m"\/"s" dot "m" = "s"^(-1)$, matching $omega$. Any arrangement of
-the gains that fails this check is wrong regardless of how plausible it looks or
-how well it happens to behave in one test --- which is exactly how I found the
-bug in my original implementation.
-
-A Lyapunov argument establishes that the origin $bold(e) = bold(0)$ is
-asymptotically stable for any $b > 0$, $zeta in (0, 1)$; see @ramsete for the
-original proof and @veness for a derivation aimed at competition robotics. One
-practical caveat: because $k$ scales with $v_d$ and $omega_d$, the controller has
-no authority when the reference is stationary, so RAMSETE corrects error while
-the robot is moving and should be handed off to a pose controller at rest.
+tracking controller such as pure pursuit @coulter or RAMSETE.
 
 = Why Acceleration/Deceleration Distance is an Approximation
 
