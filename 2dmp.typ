@@ -1,6 +1,6 @@
 // ============================================================
 // A STEP-BY-STEP GUIDE TO 2D MOTION PROFILING USING BÉZIER CURVES
-// Differential drive · real-time velocity planning
+// Differential drive
 // ============================================================
 #set page(
   paper: "us-letter",
@@ -41,7 +41,7 @@
 #v(1em)
 #align(center)[
   #text(size: 17pt, weight: "bold")[
-    An Extended Guide and Derivation to 2D Motion Profiling Using Bézier Curves
+    An Extended Guide and Derivation to 2D Motion Profiling for Differential Drivetrains Using Bézier Curves
   ]
   #v(0.8em)
 ]
@@ -75,7 +75,7 @@ We want to follow a curved path while:
 - Hitting specified speeds at key positions (keyframes)
 
 To do that, we describe the path mathematically and then compute how the robot
-should move along it in real time.
+should move along it.
 
 = Curve Representation Options
 
@@ -130,7 +130,7 @@ $ s(t) = integral_0^t norm(bold(r)'(tau)) thin d tau, $
 
 the integral of speed $norm(bold(r)'(tau))$ along the curve. We approximate this
 integral with Gaussian quadrature, following the approach used for arc-length
-parameterization of spline curves in real-time simulation @wang:
+parameterization of spline curves @wang:
 
 $
   integral_a^b f(x) thin d x approx (b - a)/2 sum_(i=1)^n w_i thin f((b - a)/2 x_i + (a + b)/2).
@@ -223,9 +223,7 @@ $
 $
 
 I use $n = 5$ nodes with $m = 8$ panels, so each call costs 40 evaluations of
-$norm(bold(r)')$ --- cheap enough to run every control cycle, and accurate enough
-that the residual error is well below the robot's odometry noise. Accuracy still
-degrades near degenerate curves (control-point placements where
+$norm(bold(r)')$. Accuracy still degrades near degenerate curves (control-point placements where
 $norm(bold(r)')$ approaches zero, creating a cusp), where further subdivision is
 the remedy @wang.
 
