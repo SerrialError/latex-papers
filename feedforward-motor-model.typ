@@ -240,7 +240,7 @@ $qed$
 
 Given
 
-$u^*_k = limits(min)_u_k limits(Sigma)^infinity_(k=0) (x^T_k bold(Q) x_k + bold(u)^T bold(R) bold(u)_k)$
+$u^*_k = limits(arg min)_u_k limits(Sigma)^infinity_(k=0) (x^T_k bold(Q) x_k + bold(u)^T bold(R) bold(u)_k)$
 
 subject to $x_(k+1) = bold(A) x_k + bold(B) bold(bold(u_k))$
 Find $bold(K)$ based on $bold(Q)$ and $bold(R)$ in LQR
@@ -261,11 +261,11 @@ $a^2 S - S - (a^2 b^2 S^2) / (R + b^2 S) + Q = 0$ by substitution
 
 $a^2 S R + a^2 b^2 S^2 - S R - b^2 S^2 + Q R + Q b^2 S - a^2 b^2 S^2 = 0$ by multiplication
 
-$a^2 S R - S R - b^2 S^2 + Q R + Q b^2 S = 0$ by multiplication
+$a^2 S R - S R - b^2 S^2 + Q R + Q b^2 S = 0$ by substitution
 
 $b^2 S^2 + (R(1 - a^2) - Q b^2) S - Q R = 0$ by substitution
 
-$Q, R, b^2 gt 0 therefore 4 b^2 Q R gt 0 therefore sqrt((R(1 - a^2) - Q b^2) + 4 b^2 Q R) gt |R(1 - a^2) - Q b^2| therefore$ the smaller root is negative which is not possible as $S gt 0$ so only the possitive root is valid
+$Q, R, b^2 gt 0 therefore 4 b^2 Q R gt 0 therefore sqrt((R(1 - a^2) - Q b^2)^2 + 4 b^2 Q R) gt |R(1 - a^2) - Q b^2| therefore$ the smaller root is negative which is not possible as $S gt 0$ so only the possitive root is valid
 
 $S = (Q b^2 - R(1 - a^2) + sqrt((R(1 - a^2) - Q b^2)^2 + 4 b^2 Q R)) / (2 b^2)$ by the quadratic formula
 
