@@ -34,6 +34,22 @@
   #body
 ]
 
+#let deeper(title, body) = block(
+  width: 100%,
+  fill: rgb("#f4f7fa"),
+  stroke: (left: 2pt + rgb("#5b8db8")),
+  inset: (x: 10pt, y: 9pt),
+  radius: (right: 2pt),
+  breakable: true,
+)[
+  #text(size: 9.5pt, weight: "bold", fill: rgb("#2f5d80"))[
+    Going deeper: #title
+  ]
+  #v(0.35em)
+  #set text(size: 10pt)
+  #body
+]
+
 // =============================================================
 // TITLE BLOCK
 // =============================================================
@@ -52,23 +68,13 @@
 
 #pagebreak()
 
-= What is Motion Profiling?
+= What is Motion Profiling and What is the Point of This?
 
 As the name suggest motion profiling profiles a motion, specifically deriving characteristcs about a movement. Specifically it derives in most cases velocities and/or derivatives of it.
 
-Motion profiling answers the question: how should a robot move from point A to
-point B?
+The main goal for this paper is to derive the 2d motion profile a differential drivetrain moving along a curve restricted by dynamics of the drivetrain and other keyframes we may input for desired states along that curve.
 
-- How fast should it go?
-- When should it turn?
-- When should it start slowing down?
-
-In this case the result is a path plus a time-parameterized velocity and angular velocity
-profile that respects the robot's physical limits.
-
-= Our Goal: Move Along a Curve <sec-goal>
-
-We want to follow a curved path while:
+Specifically we want to follow a curved path while:
 
 - Respecting maximum speed and acceleration
 - Slowing down for turns (based on curvature)
@@ -77,9 +83,25 @@ We want to follow a curved path while:
 To do that, we describe the path mathematically and then compute how the robot
 should move along it.
 
+In the end we will need to compute the following
+
++ Compute $v_"max"$: the robot's absolute maximum speed (a constant limit).
+
++ Compute $v_"accel"$: the speed limit imposed by the maximum acceleration.
+
++ Compute $v_"brake"$: the speed limit that guarantees the robot can still
+  decelerate to the exit velocity $v_"end"$ by the end of the path.
+
++ Compute $v_"curve"$: the speed limit due to curvature at the robot's current
+  position.
+
++ Compute $v_"interp"$: the speed dictated by keyframe interpolation (the speed profile we desire).
+
+And take the minimum of them and apply that velocity to the robot linearly and compute the necessary angular velocity for that linear velocity and set the robots velocity to that.
+
 = Curve Representation Options
 
-There are multiple ways to describe a smooth curve:
+There are multiple ways to describe a smooth curve (and probably many many more):
 
 - *Quadratic Bézier Curve:* Uses 3 control points (a start point, end point, and
   one middle control point) to form a smooth curve. It is simple but less
@@ -103,23 +125,90 @@ $
   y(t) & = (1 - t)^3 y_0 + 3(1 - t)^2 t thin y_1 + 3(1 - t) thin t^2 y_2 + t^3 y_3
 $
 
-= What are Keyframes?
+== Finding $v_"max"$
 
-Keyframes are specific points along the path where we fix the robot's speed. For
-example:
+The robot's absolute top speed, $v_max$. A constant, measured empirically or
+taken from the motor's free speed and gear ratio. Nothing to derive.
 
-- Start at 0 m/s
-- Reach 1 m/s halfway
-- End at 0 m/s
+== Finding $v_"accel"$
 
-The planner converts those into arc-length positions and then blends between
-them. In practice, path planning software (such as _PATH.JERRYIO_ @jerryio)
-provides a visual interface to define keyframes. For example, PATH.JERRYIO
-includes a "speed graph" where you can add *speed keyframes* at various positions
-along the path. Each keyframe corresponds to a specific distance along the path
-(the x-axis on the graph) and a desired speed (the y-axis). The planner then
-constructs the speed profile by connecting these points smoothly, ensuring the
-robot slows down or speeds up at the designated locations.
+The robot's speed can only change by $a_max thin Delta t$ in one timestep, so
+
+$ v_"accel" = v(t) + a_max thin Delta t, $
+
+where $v(t)$ is the current commanded speed. This is what keeps the profile from
+demanding an instantaneous jump in velocity that the drivetrain cannot deliver.
+
+== Finding $v_"brake"$
+
+This limit guarantees the robot can still decelerate to its exit velocity
+$v_"end"$ by the time the path runs out. From @sec-kinematics, the distance
+needed to slow from $v_max$ to $v_"end"$ at maximum deceleration is
+
+$ d_"decel" = (v_max^2 - v_"end"^2)/(2 dot a_max). $
+
+While the remaining distance $d_"remaining"$ exceeds $d_"decel"$, braking imposes
+no limit at all. Once $d_"remaining" <= d_"decel"$, we want the largest speed $v$
+from which the robot can still reach $v_"end"$ within $d_"remaining"$. Applying
+the same kinematic equation over the remaining distance:
+
+$
+  v_"end"^2 = v^2 - 2 dot a_max dot d_"remaining"
+  quad ==> quad
+  v_"brake" = sqrt(v_"end"^2 + 2 dot a_max dot d_"remaining").
+$
+
+This is the deceleration ramp of a trapezoidal profile, expressed as a function
+of distance-to-go: at $d_"remaining" = d_"decel"$ it equals $v_max$, and at
+$d_"remaining" = 0$ it equals $v_"end"$.
+
+== Finding $v_"curve"$ <sec-vcurve>
+
+The wheels of a differential drive robot have a maximum speed. In a turn, the
+outer wheel travels faster than the robot's center, so the center must slow down
+to keep the outer wheel within its limit @lavalle @wpilib:
+
+$ v_"curve"(t) = v_max dot R(t)/(R(t) + w/2), $
+
+where $w$ is the track width (the distance between the left and right wheels) and
+$R(t)$ is the radius of curvature. On a straight path
+$R -> infinity$ and the limit relaxes to $v_max$; in a hairpin $R -> 0$ and it
+drives the speed toward zero.
+
+#deeper("deriving the curvature speed limit")[
+  Start from the differential drive kinematic equations @lavalle:
+
+  $ V_l = v - r dot omega quad "and" quad V_r = v + r dot omega, $
+
+  where $v$ is linear velocity, $omega$ is angular velocity, and $r = w\/2$ is the
+  distance from the center of the robot to either wheel. Since $omega = v dot
+  kappa$ by definition of angular velocity, substituting and factoring gives
+
+  $ V_l = v dot (1 - r dot kappa), quad V_r = v dot (1 + r dot kappa). $
+
+  Each wheel must stay within its maximum velocity:
+
+  $
+    abs(v dot (1 - r dot kappa)) <= v_max, quad
+    abs(v dot (1 + r dot kappa)) <= v_max.
+  $
+
+  Since $v >= 0$ we can pull $v$ out of the absolute value and divide:
+
+  $ max(abs(1 - r dot kappa), thin abs(1 + r dot kappa)) <= v_max/v. $
+
+  That maximum is always $1 + abs(r dot kappa)$, so
+
+  $
+    1 + abs(r dot kappa) <= v_max/v
+    quad => quad
+    v <= v_max/(1 + abs(r dot kappa)).
+  $
+
+  Finally, substituting $abs(kappa) = 1\/R(t)$ gives the geometric form:
+
+  $ v <= v_max/(1 + r\/R(t)) = v_max dot R(t)/(R(t) + r). $
+]
 
 = Arc Length via Gaussian Quadrature
 
@@ -487,8 +576,7 @@ the planner.
 
 = Velocity Planning Algorithm
 
-Ok, now we put it all together. We now follow @sec-goal, which describes our
-goals. At every time step we compute several candidate speed limits and command
+Ok, now we put it all together. At every time step we compute several candidate speed limits and command
 the smallest one:
 
 + Compute $v_max$: the robot's absolute maximum speed (a constant limit).
