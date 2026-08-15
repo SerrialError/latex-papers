@@ -10,7 +10,13 @@ $tau = J alpha + B omega + tau_("load") "sign"(omega)$ by the Rotational equatio
 
 The value of $omega$ and $alpha$ (Only for the proof directly below this)
 
-Find $V$ voltage
+Find a function $V_"ff"$, voltage, for a feedforward controller
+
+$V_"ff" := V$ for this proof only for notational ease of use
+
+$omega := omega_"ref"$ for this proof only for notational ease of use
+
+$alpha := alpha_"ref"$ for this proof only for notational ease of use
 
 $V = I R + E_("mf")$, $E_("mf") = omega kappa_e$, $tau = I kappa_t$, $tau = J alpha + B omega + tau_("load") "sign"(omega)$, and the value of $omega$ and $alpha$ because they are given
 
@@ -46,9 +52,11 @@ Define $K_a$ by $K_a = (J R) / kappa_t$
 
 Define $K_s$ by $K_s = (tau_("load") R) / kappa_t$
 
-$V = K_a alpha + K_v omega + K_s "sign"(omega)$
+$V = K_a alpha + K_v omega + K_s "sign"(omega)$ by substitution
 
-Define a function $V$ by $V(omega, alpha) = K_a alpha + K_v omega + K_s "sign"(omega)$
+$V_"ff" = K_a alpha_"ref" + K_v omega_"ref" + K_s "sign"(omega_"ref")$ by substitution
+
+Define a function $V_"ff"$ by $V_"ff" (omega_"ref", alpha_"ref") = K_a alpha_"ref" + K_v omega_"ref" + K_s "sign"(omega_"ref")$
 
 $qed$
 
@@ -66,7 +74,7 @@ Define $I_("min")$ and $I_("max")$ as the current limits and define $I_("clamp")
 
 Define $V_("max")$ as the maximum voltage and set it to $V$ when finding the max acceleration
 
-Define $alpha_("max")$ as the maximum voltage and set it to $alpha$ when finding the max acceleration
+Define $alpha_("max")$ as the maximum acceleration and set it to $alpha$ when finding the max acceleration
 
 $I_("clamp") = min(max(I, I_("min")), I_("max"))$ by the definition of clamping
 
@@ -88,11 +96,13 @@ $alpha_("max") = (B omega + tau_("load") "sign"(omega) - I kappa_t)/(-J)$ by Sub
 
 $alpha_("max") = (B omega + tau_("load") "sign"(omega) - I_("clamp") kappa_t)/(-J)$ by Substitution
 
-Define a function $alpha$ by $alpha_("max") (omega) = (B omega + tau_("load") "sign"(omega) - I_("clamp") kappa_t)/(-J)$
+$alpha_("max") = (I_("clamp") kappa_t - B omega - tau_("load") "sign"(omega))/(J)$ by Substitution
+
+Define a function $alpha$ by $alpha_("max") = (I_("clamp") kappa_t - B omega - tau_("load") "sign"(omega))/(J)$
 
 $qed$
 
-Find $omega(t)$ given that the motor is constantly accelerating
+Find $omega(t)$ given that the motor is at a Constant Voltage
 
 $alpha_("max") (omega) = (V_("max") - K_v omega - "sgn"(omega) K_s)/(K_a)$
 
@@ -110,11 +120,39 @@ $omega (t) = 1 / (I(t)) (integral_0^t I(tau) Q d tau + I(0) omega_0)$
 
 $omega (t) = 1 / (e^(K_v/K_a t)) (integral_0^t e^(K_v/K_a tau) (V_("max") - s K_s) / K_a d tau + omega_0)$
 
-$omega (t) = 1 / (e^(K_v/K_a t)) ((V_("max") - s K_s) / K_a K_a / K_v (e^(K_v/K_a tau) - 1) + omega_0)$
+$omega (t) = 1 / (e^(K_v/K_a t)) ((V_("max") - s K_s) / K_a K_a / K_v (e^(K_v/K_a t) - 1) + omega_0)$
 
-$omega (t) = (V_("max") - s K_s) / K_v (e^(K_v/K_a tau) - 1) / (e^(K_v/K_a t)) + omega_0 (e^(-K_v/K_a t))$
+$omega (t) = (V_("max") - s K_s) / K_v (e^(K_v/K_a t) - 1) / (e^(K_v/K_a t)) + omega_0 (e^(-K_v/K_a t))$
 
 $omega (t) = (V_("max") - s K_s) / K_v + (omega_0 - (V_("max") - s K_s) / K_v) e^(-K_v/K_a t)$
+
+$qed$
+
+Define the plant (solve for the derivative of the state $x$ where $V$ is the desired input for the plant)
+
+$x := omega$
+
+$V := u$
+
+$accent(x, dot) = accent(omega, dot)$ by the derivative
+
+$accent(x, dot) = alpha$ by substitution
+
+$therefore$ Find $accent(x, dot)$
+
+$V_"ff" = K_a alpha_"ref" + K_v omega_"ref" + K_s "sign"(omega_"ref")$ because it is given
+
+$V_"ff" := u$ as the voltage is the input
+
+$alpha_"ref" := alpha$
+
+$omega_"ref" := omega$
+
+$u = K_a accent(x, dot) + K_v x + K_s "sign"(x)$ by substitution
+
+$K_a accent(x, dot) = u - K_v x - K_s "sign"(x)$ by subtraction
+
+$accent(x, dot) = (u - K_v x - K_s "sign"(x)) / K_a$ by division 
 
 $qed$
 
@@ -124,37 +162,41 @@ $accent(x, dot) = bold(A) x + bold(B) u$
 
 $y = bold(C) x + bold(D) u$
 
-$v = K_a alpha + K_v omega + K_s "sign"(omega)$ because it is given
+$V_"ff" = K_a alpha_"ref" + K_v omega_"ref" + K_s "sign"(omega_"ref")$ because it is given
 
-let $u = v$ and $x = vec(omega, "sign"(omega))$
+$u := V_"fb"$
 
-$alpha = accent(omega, dot)$ by the definition of acceleration
+$V := V_"ff" + V_"fb"$
 
-$accent(x, dot) mat(1, 0) = accent(omega, dot)$ by the derivative
+$V = V_"ff" + u$
 
-$alpha = accent(x, dot) mat(1, 0)$ by substitution
+$accent(x, dot) = (V - K_v x - K_s "sign"(x)) / K_a$ because it is given and $V$ is the desired input for the plant 
 
-$"sign"(omega) = x mat(0, 1)$
+$e := x - x_"ref"$ for $x$ in the feedforward
 
-$u = K_a alpha + K_v omega + K_s "sign"(omega)$ by substitution
+$accent(e, dot) = accent(x, dot) - accent(x, dot)_"ref"$
 
-$K_a accent(x, dot) mat(1, 0) = u - K_v x mat(1, 0) - K_s x mat(0, 1)$ by subtraction
+$accent(e, dot) + accent(x, dot) = (V - K_v x - K_s "sign"(x)) / K_a + accent(e, dot)$ by addition
 
-$K_a accent(x, dot) mat(1, 0) = mat(-K_v, -K_s) x + u$ by substitution
+$accent(x, dot) - accent(x, dot)_"ref" + accent(x, dot) = (V"ff" + u - K_v omega - K_s "sign"(omega)) / K_a + accent(x, dot) - accent(x, dot)_"ref"$ by substitution
 
-$accent(x, dot) mat(1, 0) = mat(-K_v/K_a, -K_s/K_a) x + 1/K_a u$ by division
+$accent(x, dot) - accent(x, dot)_"ref" + accent(x, dot) = (K_a alpha_"ref" + K_v omega_"ref" + K_s "sign"(omega_"ref") + u - K_v omega - K_s "sign"(omega)) / K_a + accent(x, dot) - accent(x, dot)_"ref"$ by substitution
 
-$accent(x, dot) = vec(1, 0) mat(-K_v/K_a, -K_s/K_a) x + vec(1,0) 1/K_a u$ by multiplication
+$accent(x, dot) - accent(x, dot)_"ref" = (K_a alpha_"ref" + K_v omega_"ref" + K_s "sign"(omega_"ref") + u - K_v omega - K_s "sign"(omega)) / K_a - accent(x, dot)_"ref"$ by subtraction
 
-$accent(x, dot) = mat(-K_v/K_a, -K_s/K_a; 0, 0) x + vec(1/K_a,0) u$ by substitution
+$accent(e, dot) = (u - K_v (omega - omega_"ref") - K_s ("sign"(omega) - "sign"(omega_"ref")) + K_a alpha_"ref") / K_a - accent(omega, dot)_"ref"$ by substitution
 
-Let $bold(A) = mat(-K_v/K_a, -K_s/K_a; 0, 0)$ and $bold(B) = vec(1/K_a,0)$
+$accent(e, dot) = (u - K_v (x - x_"ref") - K_s ("sign"(x) - "sign"(x_"ref")) + K_a alpha_"ref") / K_a - alpha_"ref"$ by substitution
 
-Let $y = vec(omega)$
+Assume $"sign"(x) = "sign"(x_"ref") therefore "sign"(x) - "sign"(x_"ref") = 0$
 
-$y = x mat(1, 0)$ by substitution
+$accent(e, dot) = (u - K_v e) / K_a$ by substitution
 
-Let $bold(C) = mat(1, 0)$ and $bold(D) = 0$
+$accent(e, dot) = -K_v/K_a e + 1/K_a u$ by substitution
+
+$x := e quad bold(A) := -K_v/K_a quad bold(B) := 1/K_a$
+
+$y := e => bold(C) = 1$ and $bold(D) = 0$
 
 $qed$
 
@@ -162,17 +204,17 @@ Given
 
 $bold(A)_d = e^(bold(A)_c T)$
 
-$bold(B)_d = integral_0^T e^(bold(A_c) tau) d tau bold(B)_c$
+$bold(B)_d = integral^T_0 e^(bold(A_c) tau) d tau bold(B)_c$
 
 $bold(C)_d = bold(C)_c$
 
 $bold(D)_d = bold(D)_c$
 
-$bold(A_c) = mat(-K_v/K_a, -K_s/K_a; 0, 0)$
+$bold(A_c) = -K_v/K_a$
 
-$bold(B_c) = vec(1/K_a,0)$
+$bold(B_c) = 1/K_a$
 
-$bold(C_c) = mat(1, 0)$
+$bold(C_c) = 1$
 
 $bold(D_c) = 0$
 
@@ -182,37 +224,15 @@ $x_(k + 1) = bold(A) x_k + bold(B) u_k$
 
 $y_k = bold(C) x_k + bold(D) u_k$
 
-$bold(A)_d = e^(mat(-K_v/K_a, -K_s/K_a; 0, 0) T)$ by substitution
+$bold(A)_d = e^(-K_v/K_a T)$ by substitution
 
-$bold(A)_d = e^mat(-T K_v/K_a, -T K_s/K_a; 0, 0)$ by substitution
+$bold(B)_d = 1/K_a integral^T_0 e^(-K_v/K_a tau) d tau$
 
-Let $a = -T K_v/K_a$ and $b = -T K_s/K_a$
+$bold(B)_d = -1/K_a K_a/K_v e^(-K_v/K_a tau)|^T_0$
 
-$bold(A)_d = e^mat(a, b; 0, 0)$ by substitution
+$bold(B)_d = 1/K_v (1 - e^(-K_v/K_a T))$
 
-$bold(A)_d = mat(e^a, b (e^a-e^0)/(a-0); 0, e^0)$ by the exponential of an upper-triangular matrix formula
-
-$bold(A)_d = mat(e^(-T K_v/K_a), -T K_s/K_a (e^(-T K_v/K_a)-1)/(-T K_v/K_a); 0, 1)$ by substitution
-
-$bold(A)_d = mat(e^(-T K_v/K_a), K_s (e^(-T K_v/K_a)-1)/K_v; 0, 1)$ by substitution
-
-$bold(B)_d = integral_0^T mat(e^(-tau K_v/K_a), K_s (e^(-tau K_v/K_a)-1)/K_v; 0, 1) vec(1/K_a,0) d tau$ by substitution
-
-$bold(B)_d = integral_0^T vec(e^(-tau K_v/K_a)/K_v,0) d tau$ by substitution
-
-$bold(B)_d =  vec(1/K_a integral_0^T e^(-tau K_v/K_a) d tau,0)$ by substitution
-
-Let $I_d = integral_0^T e^(-tau K_v/K_a) d tau$
-
-$bold(B)_d =  vec(I_d/K_v, 0)$ by substitution
-
-$I_d = e^(-0 K_v/K_a) - e^(-T K_v/K_a)$ by FTC
-
-$I_d = 1 - e^(-T K_v/K_a)$ by substitution
-
-$bold(B)_d =  vec((1 - e^(-T K_v/K_a))/K_v, 0)$ by substitution
-
-$bold(C)_d = mat(1, 0)$ by substitution
+$bold(C)_d = 1$ by substitution
 
 $bold(D)_d = 0$ by substitution
 
@@ -220,31 +240,33 @@ $qed$
 
 Given
 
-$u^*_k = "arg" "min"_u_k Sigma$ // write out LQR
+$u^*_k = limits(min)_u_k limits(Sigma)^infinity_(k=0) (x^T_k bold(Q) x_k + bold(u)^T bold(R) bold(u)_k)$
 
-Find $K$ based on $bold(Q)$ and $bold(R)$ in LQR
+subject to $x_(k+1) = bold(A) x_k + bold(B) bold(bold(u_k))$
+Find $bold(K)$ based on $bold(Q)$ and $bold(R)$ in LQR
 
 $bold(A)^T bold(S) bold(A) - bold(S) - bold(A)^T bold(S) bold(B)(bold(R) + bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A) + Q = 0$ by the discrete algebraic Riccati equation
 
-$K = (bold(R)+bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A)$ by the discrete LQR result solved by the discrete algebraic Riccati equation
+$bold(K) = (bold(R)+bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A)$ by the discrete LQR result solved by the discrete algebraic Riccati equation
 
+$bold(A) := e^(-K_v/K_a T) := a$
 
+$bold(B) := 1/K_v (1 - e^(-K_v/K_a T)) := b$
 
-
-
-
-$bold(A)^T bold(S) bold(A) - bold(S) - bold(A)^T bold(S) bold(B)(bold(R) + bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A) + Q = 0$
-
-$K = (bold(R)+bold(B)^T bold(S) bold(B))^(-1) bold(B)^T bold(S) bold(A)$
-
-$bold(A) = mat(e^(-T K_v/K_a), K_s (e^(-T K_v/K_a)-1)/K_v; 0, 1)$
-
-$bold(B) = vec((1 - e^(-T K_v/K_a))/K_v, 0)$
-
-$bold(C) = mat(1, 0)$
+$bold(C) = 1$ by substitution
 
 $bold(D) = 0$ by substitution
 
+$a^2 S - S - (a^2 b^2 S^2) / (R + b^2 S) + Q = 0$ by substitution
 
+$a^2 S R + a^2 b^2 S^2 - S R - b^2 S^2 + Q R + Q b^2 S - a^2 b^2 S^2 = 0$ by multiplication
 
+$a^2 S R - S R - b^2 S^2 + Q R + Q b^2 S = 0$ by multiplication
 
+$b^2 S^2 + (R(1 - a^2) - Q b^2) S - Q R = 0$ by substitution
+
+$Q, R, b^2 gt 0 therefore 4 b^2 Q R gt 0 therefore sqrt((R(1 - a^2) - Q b^2) + 4 b^2 Q R) gt |R(1 - a^2) - Q b^2| therefore$ the smaller root is negative which is not possible as $S gt 0$ so only the possitive root is valid
+
+$S = (Q b^2 - R(1 - a^2) + sqrt((R(1 - a^2) - Q b^2)^2 + 4 b^2 Q R)) / (2 b^2)$ by the quadratic formula
+
+$K = (a b S) / (R + b^2 S)$ by substitution
