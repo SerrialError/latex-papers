@@ -188,7 +188,7 @@ $accent(e, dot) = (u - K_v (omega - omega_"ref") - K_s ("sign"(omega) - "sign"(o
 
 $accent(e, dot) = (u - K_v (x - x_"ref") - K_s ("sign"(x) - "sign"(x_"ref")) + K_a alpha_"ref") / K_a - alpha_"ref"$ by substitution
 
-Assume $"sign"(x) = "sign"(x_"ref") therefore "sign"(x) - "sign"(x_"ref") = 0$
+Assume $"sign"(x) = "sign"(x_"ref") therefore "sign"(x) - "sign"(x_"ref") = 0$ as this can be accounted for by the ff
 
 $accent(e, dot) = (u - K_v e) / K_a$ by substitution
 
@@ -270,3 +270,5 @@ $Q, R, b^2 gt 0 therefore 4 b^2 Q R gt 0 therefore sqrt((R(1 - a^2) - Q b^2)^2 +
 $S = (Q b^2 - R(1 - a^2) + sqrt((R(1 - a^2) - Q b^2)^2 + 4 b^2 Q R)) / (2 b^2)$ by the quadratic formula
 
 $K = (a b S) / (R + b^2 S)$ by substitution
+
+$qed$
