@@ -168,7 +168,7 @@ Let $V = g (m_1 [arrow(r)_1]_y + m_t [arrow(r)_t]_y + m_2 [arrow(r)_2]_y + m_"ca
 
 47. $V'(theta) = g K L cos theta$ by differentiation of (45), using (46)
 
-48. $tau omega = dot(T) + dot(V)$ by the work-energy theorem
+48. $tau omega = dot(T) + dot(V)$ by the rate form of the work-energy principle with potential energy
 
 49. $dot(T) = 1/2 I'_"eff" (theta) omega^3 + I_"eff" (theta) omega alpha$ by differentiation of (37) using the product and chain rules
 
