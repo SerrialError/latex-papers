@@ -23,3 +23,7 @@ devenv.local.nix
 
 # direnv
 .direnv
+
+# Built output — PDFs are built by CI and served from GitHub Pages
+*.pdf
+_site/
